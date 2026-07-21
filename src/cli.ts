@@ -14,7 +14,7 @@ Opciones:
   -p, --port <n>     Puerto (default: 4321)
   --host <host>      Host (default: 127.0.0.1)
   --path <dir>       Proyecto a escanear (default: cwd)
-  --archive          Incluir changes archivados
+  --no-archive       Ocultar changes archivados (por defecto se muestran)
   --no-open          No abrir el navegador
   -h, --help         Esta ayuda
   -V, --version      Versión
@@ -31,7 +31,7 @@ function parseArgs(argv: string[]) {
     port: 4321,
     host: "127.0.0.1",
     path: process.cwd(),
-    archive: false,
+    archive: true,
     open: true,
     help: false,
     version: false,
@@ -43,6 +43,7 @@ function parseArgs(argv: string[]) {
     if (a === "--help" || a === "-h") opts.help = true;
     else if (a === "--version" || a === "-V") opts.version = true;
     else if (a === "--no-open") opts.open = false;
+    else if (a === "--no-archive") opts.archive = false;
     else if (a === "--archive") opts.archive = true;
     else if (a === "--port" || a === "-p") opts.port = Number(argv[++i]);
     else if (a === "--host") opts.host = argv[++i] ?? opts.host;
@@ -75,7 +76,7 @@ async function main() {
     return;
   }
   if (opts.version) {
-    console.log("0.1.0");
+    console.log("0.2.0");
     return;
   }
 

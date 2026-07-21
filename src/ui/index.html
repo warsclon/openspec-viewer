@@ -16,48 +16,81 @@
             <p id="project-path" class="muted">…</p>
           </div>
         </header>
+
+        <div id="stats" class="stats"></div>
+
         <div class="sidebar-section">
+          <div class="section-label">Filtro</div>
+          <div class="chip-row" id="filter-row">
+            <button type="button" class="chip active" data-filter="all">Todos</button>
+            <button type="button" class="chip" data-filter="active">Activos</button>
+            <button type="button" class="chip" data-filter="archived">Archivados</button>
+          </div>
+        </div>
+
+        <div class="sidebar-section grow">
           <div class="section-label">Changes</div>
           <div id="change-list" class="change-list"></div>
         </div>
+
+        <div class="sidebar-section" id="main-specs-wrap">
+          <div class="section-label">Specs main</div>
+          <div id="main-specs" class="spec-chips"></div>
+        </div>
+
         <footer class="sidebar-foot muted">
-          Toggle = escribe <code>tasks.md</code>
+          Archivados = read-only · Activos escriben <code>tasks.md</code>
         </footer>
       </aside>
 
       <main class="main">
-        <div id="empty-state" class="empty">
-          <h2>Elige un change</h2>
-          <p class="muted">O crea uno con <code>openspec new change …</code> si la lista está más vacía que backlog de viernes.</p>
-        </div>
+        <header class="topbar">
+          <div class="view-switch" id="view-switch">
+            <button type="button" class="view-btn active" data-view="timeline">Timeline</button>
+            <button type="button" class="view-btn" data-view="board">Board</button>
+            <button type="button" class="view-btn" data-view="detail">Detalle</button>
+          </div>
+          <p id="view-hint" class="muted view-hint">Evolución del proyecto por fecha de archive</p>
+        </header>
 
-        <div id="detail" class="detail hidden">
-          <header class="detail-header">
-            <div>
-              <p class="eyebrow" id="detail-status">in-progress</p>
-              <h2 id="detail-title">—</h2>
-            </div>
-            <div class="progress-block">
-              <div class="progress-meta">
-                <span id="progress-label">0 / 0</span>
-                <span id="progress-pct">0%</span>
+        <section id="view-timeline" class="view"></section>
+        <section id="view-board" class="view hidden"></section>
+
+        <section id="view-detail" class="view hidden">
+          <div id="empty-state" class="empty">
+            <h2>Elige un change</h2>
+            <p class="muted">O mira Timeline/Board si la lista activa está más vacía que backlog de viernes.</p>
+          </div>
+
+          <div id="detail" class="detail hidden">
+            <header class="detail-header">
+              <div>
+                <p class="eyebrow" id="detail-status">in-progress</p>
+                <h2 id="detail-title">—</h2>
+                <p id="detail-sub" class="muted"></p>
               </div>
-              <div class="progress-bar"><div id="progress-fill"></div></div>
-            </div>
-          </header>
+              <div class="progress-block">
+                <div class="progress-meta">
+                  <span id="progress-label">0 / 0</span>
+                  <span id="progress-pct">0%</span>
+                </div>
+                <div class="progress-bar"><div id="progress-fill"></div></div>
+              </div>
+            </header>
 
-          <nav class="tabs" id="tabs">
-            <button type="button" data-tab="tasks" class="tab active">Tasks</button>
-            <button type="button" data-tab="proposal" class="tab">Proposal</button>
-            <button type="button" data-tab="design" class="tab">Design</button>
-            <button type="button" data-tab="specs" class="tab">Specs</button>
-          </nav>
+            <nav class="tabs" id="tabs">
+              <button type="button" data-tab="tasks" class="tab active">Tasks</button>
+              <button type="button" data-tab="proposal" class="tab">Proposal</button>
+              <button type="button" data-tab="design" class="tab">Design</button>
+              <button type="button" data-tab="specs" class="tab">Specs</button>
+            </nav>
 
-          <section id="panel-tasks" class="panel"></section>
-          <section id="panel-proposal" class="panel hidden"></section>
-          <section id="panel-design" class="panel hidden"></section>
-          <section id="panel-specs" class="panel hidden"></section>
-        </div>
+            <section id="panel-tasks" class="panel"></section>
+            <section id="panel-proposal" class="panel hidden"></section>
+            <section id="panel-design" class="panel hidden"></section>
+            <section id="panel-specs" class="panel hidden"></section>
+          </div>
+        </section>
       </main>
     </div>
     <div id="toast" class="toast hidden"></div>

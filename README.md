@@ -7,9 +7,10 @@ OpenSpec ya trae `openspec view` (dashboard en terminal). Esto es la versión �
 ## Qué hace (MVP)
 
 - Detecta `openspec/` subiendo desde el cwd (o `--path`)
-- Lista changes activos (y opcionalmente archive)
+- Lista changes **activos + archivados** (filtro en UI)
+- Vistas **Timeline** (evolución por fecha), **Board** (kanban) y **Detalle**
 - Muestra proposal / design / specs / tasks
-- **Toggle de tareas** → escribe `openspec/changes/<name>/tasks.md` al vuelo
+- **Toggle de tareas** en changes activos → escribe `tasks.md` (archive = read-only)
 
 ## Requisitos
 
@@ -30,6 +31,7 @@ openspec-viewer
 openspec-viewer /ruta/al/proyecto
 openspec-viewer --port 5173 --path ../mi-app
 openspec-viewer --no-open
+openspec-viewer --no-archive   # solo activos
 ```
 
 Dev sin build:
@@ -43,7 +45,7 @@ npm run dev -- --path /ruta/al/proyecto
 | Método | Ruta | Descripción |
 |--------|------|-------------|
 | GET | `/api/project` | Rutas del proyecto |
-| GET | `/api/changes` | Lista de changes + progreso |
+| GET | `/api/changes` | Lista de changes + overview (stats, specs, byDay) |
 | GET | `/api/changes/:name` | Detalle (markdown + tasks parseadas) |
 | POST | `/api/changes/:name/tasks/toggle` | Body: `{ "taskId": "1.2", "done": true }` |
 

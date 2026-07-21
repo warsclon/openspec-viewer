@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import type { ProjectRoot } from "./openspec/discover.js";
 import {
   getChangeDetail,
+  getOverview,
   getProjectInfo,
   listChanges,
   tasksPathFor,
@@ -74,7 +75,7 @@ export type ServerOptions = {
 export function startServer(opts: ServerOptions) {
   const host = opts.host ?? "127.0.0.1";
   const port = opts.port ?? 4321;
-  const includeArchive = opts.includeArchive ?? false;
+  const includeArchive = opts.includeArchive ?? true;
   const { root } = opts;
 
   const server = createServer(async (req, res) => {
@@ -92,8 +93,10 @@ export function startServer(opts: ServerOptions) {
       }
 
       if (method === "GET" && pathname === "/api/changes") {
+        const changes = listChanges(root, includeArchive);
         return sendJson(res, 200, {
-          changes: listChanges(root, includeArchive),
+          changes,
+          overview: getOverview(root, changes),
         });
       }
 
@@ -106,6 +109,11 @@ export function startServer(opts: ServerOptions) {
       const toggleMatch = pathname.match(/^\/api\/changes\/([^/]+)\/tasks\/toggle$/);
       if (method === "POST" && toggleMatch) {
         const name = decodeURIComponent(toggleMatch[1]);
+        if (name.startsWith("archive/")) {
+          return sendJson(res, 400, {
+            error: "Change archivado es read-only (como los commits de prod un viernes).",
+          });
+        }
         const body = JSON.parse((await readBody(req)) || "{}") as {
           taskId?: string;
           done?: boolean;
