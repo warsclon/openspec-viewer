@@ -76,7 +76,7 @@ async function main() {
     return;
   }
   if (opts.version) {
-    console.log("0.2.0");
+    console.log("0.3.0");
     return;
   }
 

@@ -4,10 +4,12 @@ import { dirname, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ProjectRoot } from "./openspec/discover.js";
 import {
+  buildSpecChangeGraph,
   getChangeDetail,
   getOverview,
   getProjectInfo,
   listChanges,
+  listNextUp,
   tasksPathFor,
 } from "./openspec/project.js";
 import { toggleTaskFile } from "./openspec/tasks.js";
@@ -97,7 +99,19 @@ export function startServer(opts: ServerOptions) {
         return sendJson(res, 200, {
           changes,
           overview: getOverview(root, changes),
+          nextUp: listNextUp(changes),
+          graph: buildSpecChangeGraph(root, changes),
         });
+      }
+
+      if (method === "GET" && pathname === "/api/graph") {
+        const changes = listChanges(root, includeArchive);
+        return sendJson(res, 200, buildSpecChangeGraph(root, changes));
+      }
+
+      if (method === "GET" && pathname === "/api/next") {
+        const changes = listChanges(root, includeArchive);
+        return sendJson(res, 200, { items: listNextUp(changes) });
       }
 
       const changeMatch = pathname.match(/^\/api\/changes\/([^/]+)$/);

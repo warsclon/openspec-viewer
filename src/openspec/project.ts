@@ -12,6 +12,12 @@ import { parseTasksMarkdown, readTasksFile, type ParsedTasks } from "./tasks.js"
 
 const ARCHIVE_FOLDER_RE = /^(\d{4}-\d{2}-\d{2})-(.+)$/;
 
+export type NextTask = {
+  id: string;
+  text: string;
+  section: string | null;
+};
+
 export type ChangeSummary = {
   name: string;
   displayName: string;
@@ -29,6 +35,7 @@ export type ChangeSummary = {
   hasTasks: boolean;
   specCount: number;
   specIds: string[];
+  nextTask: NextTask | null;
 };
 
 export type ChangeDetail = ChangeSummary & {
@@ -51,6 +58,37 @@ export type Overview = {
   completedTasks: number;
   mainSpecs: MainSpecSummary[];
   byDay: { date: string; count: number; completedTasks: number; totalTasks: number }[];
+};
+
+export type GraphNode = {
+  id: string;
+  kind: "spec" | "change";
+  label: string;
+  archived?: boolean;
+  status?: ChangeSummary["status"];
+  main?: boolean;
+  degree: number;
+  progress?: number;
+  completedTasks?: number;
+  totalTasks?: number;
+};
+
+export type GraphEdge = {
+  id: string;
+  from: string; // change node id
+  to: string; // spec node id
+  changeName: string;
+  specId: string;
+};
+
+export type SpecChangeGraph = {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+};
+
+export type NextUpItem = {
+  change: ChangeSummary;
+  nextTask: NextTask;
 };
 
 function latestMtime(paths: string[]): string | null {
@@ -123,10 +161,22 @@ export function summarizeChange(root: ProjectRoot, name: string): ChangeSummary 
 
   let completedTasks = 0;
   let totalTasks = 0;
+  let nextTask: NextTask | null = null;
   if (existsSync(tasksPath)) {
     const parsed = readTasksFile(tasksPath);
     completedTasks = parsed.completed;
     totalTasks = parsed.total;
+    for (const section of parsed.sections) {
+      const hit = section.tasks.find((t) => !t.done);
+      if (hit) {
+        nextTask = {
+          id: hit.id,
+          text: hit.text,
+          section: section.title === "Tasks" ? null : section.title,
+        };
+        break;
+      }
+    }
   }
 
   let status: ChangeSummary["status"] = "empty";
@@ -168,6 +218,7 @@ export function summarizeChange(root: ProjectRoot, name: string): ChangeSummary 
     hasTasks: existsSync(tasksPath),
     specCount: specs.length,
     specIds: specs.map((s) => s.id),
+    nextTask,
   };
 }
 
@@ -236,6 +287,77 @@ export function tasksPathFor(root: ProjectRoot, changeName: string): string {
     throw new Error(`tasks.md no existe para ${changeName}`);
   }
   return path;
+}
+
+export function buildSpecChangeGraph(
+  root: ProjectRoot,
+  changes: ChangeSummary[],
+): SpecChangeGraph {
+  const mainSpecs = listMainSpecs(root);
+  const mainIds = new Set(mainSpecs.map((s) => s.id));
+  const deltaSpecIds = new Set<string>();
+  for (const c of changes) {
+    for (const id of c.specIds) deltaSpecIds.add(id);
+  }
+
+  const allSpecIds = [...new Set([...mainIds, ...deltaSpecIds])].sort((a, b) =>
+    a.localeCompare(b),
+  );
+
+  const edges: GraphEdge[] = [];
+  const degree = new Map<string, number>();
+  const bump = (id: string) => degree.set(id, (degree.get(id) ?? 0) + 1);
+
+  for (const c of changes) {
+    const changeNodeId = `change:${c.name}`;
+    for (const specId of c.specIds) {
+      const specNodeId = `spec:${specId}`;
+      edges.push({
+        id: `${c.name}→${specId}`,
+        from: changeNodeId,
+        to: specNodeId,
+        changeName: c.name,
+        specId,
+      });
+      bump(changeNodeId);
+      bump(specNodeId);
+    }
+  }
+
+  const nodes: GraphNode[] = [
+    ...allSpecIds.map((id) => ({
+      id: `spec:${id}`,
+      kind: "spec" as const,
+      label: id,
+      main: mainIds.has(id),
+      degree: degree.get(`spec:${id}`) ?? 0,
+    })),
+    ...changes.map((c) => ({
+      id: `change:${c.name}`,
+      kind: "change" as const,
+      label: c.displayName,
+      archived: c.archived,
+      status: c.status,
+      degree: degree.get(`change:${c.name}`) ?? 0,
+      progress: c.progress,
+      completedTasks: c.completedTasks,
+      totalTasks: c.totalTasks,
+    })),
+  ];
+
+  return { nodes, edges };
+}
+
+export function listNextUp(changes: ChangeSummary[]): NextUpItem[] {
+  return changes
+    .filter((c) => !c.archived && c.nextTask)
+    .map((c) => ({ change: c, nextTask: c.nextTask! }))
+    .sort((a, b) => {
+      const pa = a.change.progress;
+      const pb = b.change.progress;
+      if (pa !== pb) return pb - pa; // más avanzados primero (momentum)
+      return a.change.displayName.localeCompare(b.change.displayName);
+    });
 }
 
 export { parseTasksMarkdown, findOpenspecRoot };

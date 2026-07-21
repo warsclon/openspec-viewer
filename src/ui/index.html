@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>OpenSpec Viewer</title>
     <link rel="stylesheet" href="/styles.css" />
+    <script>
+      (() => {
+        try {
+          const theme = localStorage.getItem("osv:theme") || "dark";
+          const font = localStorage.getItem("osv:fontScale") || "md";
+          document.documentElement.dataset.theme = theme === "light" ? "light" : "dark";
+          document.documentElement.dataset.font = ["sm", "md", "lg", "xl"].includes(font) ? font : "md";
+        } catch {}
+      })();
+    </script>
   </head>
   <body>
     <div class="app">
@@ -45,15 +55,34 @@
 
       <main class="main">
         <header class="topbar">
-          <div class="view-switch" id="view-switch">
-            <button type="button" class="view-btn active" data-view="timeline">Timeline</button>
-            <button type="button" class="view-btn" data-view="board">Board</button>
-            <button type="button" class="view-btn" data-view="detail">Detalle</button>
+          <div class="topbar-left">
+            <div class="view-switch" id="view-switch">
+              <button type="button" class="view-btn active" data-view="next">Ahora</button>
+              <button type="button" class="view-btn" data-view="graph">Grafo</button>
+              <button type="button" class="view-btn" data-view="timeline">Timeline</button>
+              <button type="button" class="view-btn" data-view="board">Board</button>
+              <button type="button" class="view-btn" data-view="detail">Detalle</button>
+            </div>
+            <p id="view-hint" class="muted view-hint">Evolución del proyecto por fecha de archive</p>
           </div>
-          <p id="view-hint" class="muted view-hint">Evolución del proyecto por fecha de archive</p>
+          <div class="prefs" aria-label="Preferencias de visualización">
+            <div class="pref-group" title="Tema">
+              <button type="button" class="icon-btn" id="theme-toggle" aria-label="Cambiar tema">
+                <span class="theme-icon theme-icon-dark" aria-hidden="true">☾</span>
+                <span class="theme-icon theme-icon-light" aria-hidden="true">☀</span>
+              </button>
+            </div>
+            <div class="pref-group font-group" title="Tamaño de fuente">
+              <button type="button" class="icon-btn" id="font-dec" aria-label="Reducir fuente">A−</button>
+              <span id="font-label" class="font-label">M</span>
+              <button type="button" class="icon-btn" id="font-inc" aria-label="Aumentar fuente">A+</button>
+            </div>
+          </div>
         </header>
 
-        <section id="view-timeline" class="view"></section>
+        <section id="view-next" class="view"></section>
+        <section id="view-graph" class="view hidden"></section>
+        <section id="view-timeline" class="view hidden"></section>
         <section id="view-board" class="view hidden"></section>
 
         <section id="view-detail" class="view hidden">
