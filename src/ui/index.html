@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OpenSpec Viewer</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <header class="brand">
+          <div class="logo">OS</div>
+          <div>
+            <h1>OpenSpec Viewer</h1>
+            <p id="project-path" class="muted">…</p>
+          </div>
+        </header>
+        <div class="sidebar-section">
+          <div class="section-label">Changes</div>
+          <div id="change-list" class="change-list"></div>
+        </div>
+        <footer class="sidebar-foot muted">
+          Toggle = escribe <code>tasks.md</code>
+        </footer>
+      </aside>
+
+      <main class="main">
+        <div id="empty-state" class="empty">
+          <h2>Elige un change</h2>
+          <p class="muted">O crea uno con <code>openspec new change …</code> si la lista está más vacía que backlog de viernes.</p>
+        </div>
+
+        <div id="detail" class="detail hidden">
+          <header class="detail-header">
+            <div>
+              <p class="eyebrow" id="detail-status">in-progress</p>
+              <h2 id="detail-title">—</h2>
+            </div>
+            <div class="progress-block">
+              <div class="progress-meta">
+                <span id="progress-label">0 / 0</span>
+                <span id="progress-pct">0%</span>
+              </div>
+              <div class="progress-bar"><div id="progress-fill"></div></div>
+            </div>
+          </header>
+
+          <nav class="tabs" id="tabs">
+            <button type="button" data-tab="tasks" class="tab active">Tasks</button>
+            <button type="button" data-tab="proposal" class="tab">Proposal</button>
+            <button type="button" data-tab="design" class="tab">Design</button>
+            <button type="button" data-tab="specs" class="tab">Specs</button>
+          </nav>
+
+          <section id="panel-tasks" class="panel"></section>
+          <section id="panel-proposal" class="panel hidden"></section>
+          <section id="panel-design" class="panel hidden"></section>
+          <section id="panel-specs" class="panel hidden"></section>
+        </div>
+      </main>
+    </div>
+    <div id="toast" class="toast hidden"></div>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
