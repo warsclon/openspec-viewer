@@ -32,6 +32,7 @@ export function ensureViewerGitignore(root: ProjectRoot): void {
     writeFileSync(gi, "# local openspec-viewer state (do not commit)\n*\n", "utf8");
   }
 
+  // Only append to an existing root .gitignore (never create one unsolicited).
   const rootGi = join(root.projectDir, ".gitignore");
   const line = `${DIR_NAME}/`;
   if (existsSync(rootGi)) {
@@ -39,8 +40,6 @@ export function ensureViewerGitignore(root: ProjectRoot): void {
     if (!cur.split(/\r?\n/).some((l) => l.trim() === line || l.trim() === DIR_NAME)) {
       appendFileSync(rootGi, `${cur.endsWith("\n") ? "" : "\n"}\n# openspec-viewer local notes\n${line}\n`);
     }
-  } else {
-    writeFileSync(rootGi, `# openspec-viewer local notes\n${line}\n`, "utf8");
   }
 }
 
