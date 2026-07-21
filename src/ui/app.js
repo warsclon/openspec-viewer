@@ -16,6 +16,14 @@ const state = {
   theme: "dark",
   fontScale: "md",
   focusSpec: null, // highlight/filter graph by spec id
+  live: "connecting", // connecting | live | offline
+  applyingRoute: false,
+  searchOpen: false,
+  searchHits: [],
+  searchIndex: 0,
+  searchTimer: null,
+  reloadTimer: null,
+  selfWriteUntil: 0,
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -87,6 +95,9 @@ function toast(msg, type = "ok") {
 }
 
 async function api(path, options) {
+  if (options?.method === "POST" && String(path).includes("/tasks/toggle")) {
+    state.selfWriteUntil = Date.now() + 1200;
+  }
   const res = await fetch(path, {
     headers: { "Content-Type": "application/json" },
     ...options,
@@ -368,16 +379,65 @@ function renderMarkdownPanels(detail) {
       )
       .join("");
   }
+  renderDiff(detail);
 }
 
-function showTab(tab) {
-  state.tab = tab;
+function renderDiff(detail) {
+  const panel = $("#panel-diff");
+  const diffs = detail.specDiffs || [];
+  if (!diffs.length) {
+    panel.innerHTML = `<div class="md"><p class="muted">Este change no trae delta specs. Nada que comparar (todavía).</p></div>`;
+    return;
+  }
+
+  panel.innerHTML = diffs
+    .map((d) => {
+      const s = d.summary || { added: 0, modified: 0, removed: 0, other: 0 };
+      const ops =
+        d.operations?.length > 0
+          ? d.operations
+              .map(
+                (op) => `
+            <div class="diff-op op-${escapeHtml(op.op.toLowerCase())}">
+              <div class="diff-op-head">
+                <span class="diff-badge">${escapeHtml(op.op)}</span>
+                <strong>${escapeHtml(op.title)}</strong>
+              </div>
+              ${op.preview ? `<p class="muted diff-preview">${escapeHtml(op.preview)}</p>` : ""}
+            </div>`,
+              )
+              .join("")
+          : `<p class="muted">Sin headers ADDED/MODIFIED/REMOVED detectados. Revisa el delta crudo en Specs.</p>`;
+
+      return `
+        <div class="diff-card">
+          <header class="diff-card-head">
+            <div>
+              <h3>${escapeHtml(d.id)}</h3>
+              <p class="muted">${d.mainExists ? "main existe" : "spec nueva (no está en main aún)"}</p>
+            </div>
+            <div class="diff-counts">
+              <span class="diff-count add">+${s.added}</span>
+              <span class="diff-count mod">~${s.modified}</span>
+              <span class="diff-count rem">−${s.removed}</span>
+            </div>
+          </header>
+          <div class="diff-ops">${ops}</div>
+        </div>`;
+    })
+    .join("");
+}
+
+function showTab(tab, opts = {}) {
+  const allowed = ["tasks", "diff", "proposal", "design", "specs"];
+  state.tab = allowed.includes(tab) ? tab : "tasks";
   document.querySelectorAll(".tab").forEach((b) => {
-    b.classList.toggle("active", b.dataset.tab === tab);
+    b.classList.toggle("active", b.dataset.tab === state.tab);
   });
-  ["tasks", "proposal", "design", "specs"].forEach((name) => {
-    $(`#panel-${name}`).classList.toggle("hidden", name !== tab);
+  allowed.forEach((name) => {
+    $(`#panel-${name}`).classList.toggle("hidden", name !== state.tab);
   });
+  if (!opts.silent) writeHash();
 }
 
 function nextTaskFromSections(sections) {
@@ -405,24 +465,80 @@ function rebuildNextUp() {
     });
 }
 
-function setView(view) {
-  state.view = view;
+function setView(view, opts = {}) {
+  const allowed = ["next", "graph", "timeline", "board", "detail"];
+  state.view = allowed.includes(view) ? view : "next";
   document.querySelectorAll(".view-btn").forEach((b) => {
-    b.classList.toggle("active", b.dataset.view === view);
+    b.classList.toggle("active", b.dataset.view === state.view);
   });
-  ["next", "graph", "timeline", "board", "detail"].forEach((name) => {
-    $(`#view-${name}`).classList.toggle("hidden", name !== view);
+  allowed.forEach((name) => {
+    $(`#view-${name}`).classList.toggle("hidden", name !== state.view);
   });
   const hints = {
     next: "Siguiente task incompleta de cada change activo — modo ‘qué hago ahora’",
     graph: "Specs main ↔ changes (edges = deltas que tocaron esa spec)",
     timeline: "Evolución por fecha (archive date o última edición)",
     board: "Kanban: activos / en curso / hechos / archivados",
-    detail: "Proposal, design, specs y tasks del change seleccionado",
+    detail: "Proposal, design, specs, diff y tasks del change seleccionado",
   };
-  $("#view-hint").textContent = hints[view];
-  if (view === "graph") renderGraph();
-  if (view === "next") renderNext();
+  $("#view-hint").textContent = hints[state.view];
+  if (state.view === "graph") renderGraph();
+  if (state.view === "next") renderNext();
+  if (!opts.silent) writeHash();
+}
+
+function writeHash() {
+  if (state.applyingRoute) return;
+  let hash = `#/${state.view}`;
+  if (state.view === "graph" && state.focusSpec) {
+    hash += `?spec=${encodeURIComponent(state.focusSpec)}`;
+  }
+  if (state.view === "detail" && state.selected) {
+    hash = `#/change/${encodeURIComponent(state.selected)}`;
+    if (state.tab && state.tab !== "tasks") hash += `/${state.tab}`;
+  }
+  if (location.hash !== hash) {
+    history.replaceState(null, "", hash);
+  }
+}
+
+function parseHash() {
+  const raw = (location.hash || "").replace(/^#/, "");
+  if (!raw || raw === "/") return null;
+  const [pathPart, queryPart] = raw.split("?");
+  const parts = pathPart.split("/").filter(Boolean);
+  const params = new URLSearchParams(queryPart || "");
+  if (parts[0] === "change" && parts[1]) {
+    return {
+      view: "detail",
+      change: decodeURIComponent(parts[1]),
+      tab: parts[2] || "tasks",
+      focusSpec: null,
+    };
+  }
+  const view = parts[0];
+  return {
+    view: ["next", "graph", "timeline", "board", "detail"].includes(view) ? view : "next",
+    change: null,
+    tab: "tasks",
+    focusSpec: params.get("spec"),
+  };
+}
+
+async function applyRoute(route) {
+  if (!route) return;
+  state.applyingRoute = true;
+  try {
+    if (route.focusSpec) state.focusSpec = route.focusSpec;
+    if (route.view === "detail" && route.change) {
+      await openDetail(route.change, { silent: true, tab: route.tab });
+    } else {
+      setView(route.view, { silent: true });
+    }
+  } finally {
+    state.applyingRoute = false;
+    writeHash();
+  }
 }
 
 function cardHtml(c) {
@@ -738,6 +854,7 @@ function renderGraph() {
         state.focusSpec = state.focusSpec === el.dataset.spec ? null : el.dataset.spec;
         renderGraph();
         renderStats();
+        writeHash();
       }
     });
   });
@@ -746,6 +863,7 @@ function renderGraph() {
     state.focusSpec = null;
     renderGraph();
     renderStats();
+    writeHash();
   });
 }
 
@@ -864,27 +982,40 @@ function renderBoard() {
   bindCards(root);
 }
 
-async function openDetail(name) {
+async function openDetail(name, opts = {}) {
   state.selected = name;
   renderChangeList();
-  setView("detail");
+  setView("detail", { silent: true });
   const detail = await api(`/api/changes/${encodeURIComponent(name)}`);
   state.detail = detail;
   $("#empty-state").classList.add("hidden");
   $("#detail").classList.remove("hidden");
   $("#detail-title").textContent = detail.displayName;
   $("#detail-status").textContent = detail.archived ? "archived" : detail.status;
+  const diffSummary = (detail.specDiffs || []).reduce(
+    (acc, d) => {
+      acc.added += d.summary?.added || 0;
+      acc.modified += d.summary?.modified || 0;
+      acc.removed += d.summary?.removed || 0;
+      return acc;
+    },
+    { added: 0, modified: 0, removed: 0 },
+  );
   $("#detail-sub").textContent = [
     detail.archived ? `archive/${detail.folderName}` : detail.name,
     detail.archiveDate ? `· ${detail.archiveDate}` : "",
     detail.specIds?.length ? `· specs: ${detail.specIds.join(", ")}` : "",
+    detail.specDiffs?.length
+      ? `· diff +${diffSummary.added}/~${diffSummary.modified}/−${diffSummary.removed}`
+      : "",
   ]
     .filter(Boolean)
     .join(" ");
   setProgress(detail.completedTasks, detail.totalTasks, detail.archived);
   renderTasks(detail);
   renderMarkdownPanels(detail);
-  showTab(state.tab);
+  showTab(opts.tab || state.tab || "tasks", { silent: true });
+  if (!opts.silent) writeHash();
 }
 
 function refreshViews() {
@@ -896,12 +1027,7 @@ function refreshViews() {
   renderBoard();
 }
 
-async function init() {
-  initPrefs();
-
-  const project = await api("/api/project");
-  $("#project-path").textContent = project.projectDir;
-
+async function loadData({ quiet = false } = {}) {
   const data = await api("/api/changes");
   state.changes = data.changes;
   state.overview = data.overview;
@@ -909,7 +1035,214 @@ async function init() {
   state.nextUp = data.nextUp || [];
   rebuildNextUp();
   refreshViews();
-  setView(state.changes.some((c) => !c.archived && c.nextTask) ? "next" : "graph");
+  if (state.view === "detail" && state.selected) {
+    try {
+      const detail = await api(`/api/changes/${encodeURIComponent(state.selected)}`);
+      state.detail = detail;
+      const still = state.changes.some((c) => c.name === state.selected);
+      if (still) {
+        $("#detail-title").textContent = detail.displayName;
+        $("#detail-status").textContent = detail.archived ? "archived" : detail.status;
+        setProgress(detail.completedTasks, detail.totalTasks, detail.archived);
+        renderTasks(detail);
+        renderMarkdownPanels(detail);
+        showTab(state.tab, { silent: true });
+      }
+    } catch {
+      // change may have disappeared
+    }
+  }
+  if (!quiet) {
+    // no toast on first load
+  }
+}
+
+function setLive(status, label) {
+  state.live = status;
+  const dot = $("#live-dot");
+  const el = $("#live-label");
+  if (dot) dot.dataset.status = status;
+  if (el) el.textContent = label;
+}
+
+function connectLive() {
+  if (typeof EventSource === "undefined") {
+    setLive("offline", "sin SSE");
+    return;
+  }
+  const es = new EventSource("/api/events");
+  es.addEventListener("hello", () => setLive("live", "live"));
+  es.addEventListener("reload", (ev) => {
+    let data = {};
+    try {
+      data = JSON.parse(ev.data);
+    } catch {
+      // ignore
+    }
+    if (Date.now() < state.selfWriteUntil && data.reason === "toggle") {
+      return;
+    }
+    setLive("live", "sync…");
+    if (state.reloadTimer) clearTimeout(state.reloadTimer);
+    state.reloadTimer = setTimeout(async () => {
+      try {
+        await loadData({ quiet: true });
+        setLive("live", "live · synced");
+        setTimeout(() => {
+          if (state.live.startsWith("live")) setLive("live", "live");
+        }, 1200);
+      } catch (err) {
+        setLive("offline", "error sync");
+        toast(err.message, "error");
+      }
+    }, 200);
+  });
+  es.onerror = () => {
+    setLive("offline", "reconectando…");
+  };
+  es.onopen = () => setLive("live", "live");
+}
+
+/* ——— Search (⌘K) ——— */
+function openSearch() {
+  state.searchOpen = true;
+  $("#search-modal").classList.remove("hidden");
+  const input = $("#search-input");
+  input.value = "";
+  state.searchHits = [];
+  state.searchIndex = 0;
+  renderSearchResults();
+  setTimeout(() => input.focus(), 0);
+}
+
+function closeSearch() {
+  state.searchOpen = false;
+  $("#search-modal").classList.add("hidden");
+}
+
+function renderSearchResults() {
+  const root = $("#search-results");
+  if (!state.searchHits.length) {
+    root.innerHTML = `<p class="muted search-empty">Escribe para buscar en changes, tasks, proposal, design y specs.</p>`;
+    return;
+  }
+  root.innerHTML = state.searchHits
+    .map((h, i) => {
+      const active = i === state.searchIndex ? "active" : "";
+      return `
+        <button type="button" class="search-hit ${active}" data-idx="${i}">
+          <div class="search-hit-top">
+            <span class="badge">${escapeHtml(h.kind)}</span>
+            <span class="search-title">${escapeHtml(h.title)}</span>
+          </div>
+          <div class="muted search-sub">${escapeHtml(h.subtitle || "")}</div>
+          ${h.snippet ? `<div class="search-snip">${escapeHtml(h.snippet)}</div>` : ""}
+        </button>`;
+    })
+    .join("");
+
+  root.querySelectorAll(".search-hit").forEach((btn) => {
+    btn.addEventListener("click", () => activateSearchHit(Number(btn.dataset.idx)));
+  });
+}
+
+async function runSearch(q) {
+  if (!q.trim()) {
+    state.searchHits = [];
+    renderSearchResults();
+    return;
+  }
+  const data = await api(`/api/search?q=${encodeURIComponent(q)}`);
+  state.searchHits = data.hits || [];
+  state.searchIndex = 0;
+  renderSearchResults();
+}
+
+async function activateSearchHit(idx) {
+  const hit = state.searchHits[idx];
+  if (!hit) return;
+  closeSearch();
+  if (hit.kind === "spec-main" && hit.specId) {
+    state.focusSpec = hit.specId;
+    setView("graph");
+    renderStats();
+    return;
+  }
+  if (hit.changeName) {
+    const tab =
+      hit.kind === "proposal"
+        ? "proposal"
+        : hit.kind === "design"
+          ? "design"
+          : hit.kind === "spec-delta"
+            ? "diff"
+            : "tasks";
+    await openDetail(hit.changeName, { tab });
+  }
+}
+
+function initSearch() {
+  $("#search-launch")?.addEventListener("click", openSearch);
+  $("#search-modal")?.addEventListener("click", (e) => {
+    if (e.target.id === "search-modal") closeSearch();
+  });
+  $("#search-input")?.addEventListener("input", (e) => {
+    const q = e.target.value;
+    if (state.searchTimer) clearTimeout(state.searchTimer);
+    state.searchTimer = setTimeout(() => {
+      runSearch(q).catch((err) => toast(err.message, "error"));
+    }, 140);
+  });
+  $("#search-input")?.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      state.searchIndex = Math.min(state.searchIndex + 1, state.searchHits.length - 1);
+      renderSearchResults();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      state.searchIndex = Math.max(state.searchIndex - 1, 0);
+      renderSearchResults();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      activateSearchHit(state.searchIndex);
+    } else if (e.key === "Escape") {
+      closeSearch();
+    }
+  });
+
+  window.addEventListener("keydown", (e) => {
+    const isK = e.key.toLowerCase() === "k";
+    if ((e.metaKey || e.ctrlKey) && isK) {
+      e.preventDefault();
+      if (state.searchOpen) closeSearch();
+      else openSearch();
+    } else if (e.key === "Escape" && state.searchOpen) {
+      closeSearch();
+    }
+  });
+}
+
+async function init() {
+  initPrefs();
+  initSearch();
+  connectLive();
+
+  const project = await api("/api/project");
+  $("#project-path").textContent = project.projectDir;
+
+  await loadData();
+
+  const route = parseHash();
+  if (route) {
+    await applyRoute(route);
+  } else {
+    setView(state.changes.some((c) => !c.archived && c.nextTask) ? "next" : "graph");
+  }
+
+  window.addEventListener("hashchange", () => {
+    const r = parseHash();
+    if (r) applyRoute(r);
+  });
 
   $("#filter-row").addEventListener("click", (e) => {
     const btn = e.target.closest(".chip");

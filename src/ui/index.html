@@ -24,8 +24,17 @@
           <div>
             <h1>OpenSpec Viewer</h1>
             <p id="project-path" class="muted">…</p>
+            <p class="live-line">
+              <span id="live-dot" class="live-dot" title="Live reload"></span>
+              <span id="live-label" class="muted">conectando…</span>
+            </p>
           </div>
         </header>
+
+        <button type="button" class="search-launch" id="search-launch" title="Buscar (⌘K)">
+          <span>Buscar changes, tasks, specs…</span>
+          <kbd>⌘K</kbd>
+        </button>
 
         <div id="stats" class="stats"></div>
 
@@ -109,12 +118,14 @@
 
             <nav class="tabs" id="tabs">
               <button type="button" data-tab="tasks" class="tab active">Tasks</button>
+              <button type="button" data-tab="diff" class="tab">Diff</button>
               <button type="button" data-tab="proposal" class="tab">Proposal</button>
               <button type="button" data-tab="design" class="tab">Design</button>
               <button type="button" data-tab="specs" class="tab">Specs</button>
             </nav>
 
             <section id="panel-tasks" class="panel"></section>
+            <section id="panel-diff" class="panel hidden"></section>
             <section id="panel-proposal" class="panel hidden"></section>
             <section id="panel-design" class="panel hidden"></section>
             <section id="panel-specs" class="panel hidden"></section>
@@ -122,6 +133,18 @@
         </section>
       </main>
     </div>
+
+    <div id="search-modal" class="search-modal hidden" role="dialog" aria-modal="true" aria-label="Búsqueda global">
+      <div class="search-panel">
+        <div class="search-input-row">
+          <input id="search-input" type="search" placeholder="Buscar change, task, proposal, design, spec…" autocomplete="off" />
+          <kbd>esc</kbd>
+        </div>
+        <div id="search-results" class="search-results"></div>
+        <p class="search-foot muted">↵ abrir · ↑↓ navegar · esc cerrar</p>
+      </div>
+    </div>
+
     <div id="toast" class="toast hidden"></div>
     <script src="/app.js" type="module"></script>
   </body>

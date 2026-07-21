@@ -4,13 +4,15 @@ CLI local que levanta una UI web para **ver y gestionar** changes de [OpenSpec](
 
 OpenSpec ya trae `openspec view` (dashboard en terminal). Esto es la versión “quiero verlo en el navegador y marcar checkboxes sin pelearme con el markdown”.
 
-## Qué hace (MVP)
+## Qué hace
 
 - Detecta `openspec/` subiendo desde el cwd (o `--path`)
-- Lista changes **activos + archivados** (filtro en UI)
-- Vistas **Timeline** (evolución por fecha), **Board** (kanban) y **Detalle**
-- Muestra proposal / design / specs / tasks
-- **Toggle de tareas** en changes activos → escribe `tasks.md` (archive = read-only)
+- Changes **activos + archivados**, vistas **Ahora / Grafo / Timeline / Board / Detalle**
+- **Live reload** (`fs.watch` + SSE) cuando cambia `openspec/`
+- **Búsqueda global** `⌘K` / `Ctrl+K` (change, task, proposal, design, spec)
+- **Diff** main vs delta (ADDED / MODIFIED / REMOVED)
+- **Deep links** `#/next`, `#/graph?spec=…`, `#/change/<name>/diff`
+- Toggle de tasks en activos → `tasks.md` (archive = read-only)
 
 ## Requisitos
 
@@ -45,9 +47,11 @@ npm run dev -- --path /ruta/al/proyecto
 | Método | Ruta | Descripción |
 |--------|------|-------------|
 | GET | `/api/project` | Rutas del proyecto |
-| GET | `/api/changes` | Lista de changes + overview (stats, specs, byDay) |
-| GET | `/api/changes/:name` | Detalle (markdown + tasks parseadas) |
+| GET | `/api/changes` | Lista + overview + graph + nextUp |
+| GET | `/api/changes/:name` | Detalle + tasks + **specDiffs** |
 | POST | `/api/changes/:name/tasks/toggle` | Body: `{ "taskId": "1.2", "done": true }` |
+| GET | `/api/search?q=` | Búsqueda global |
+| GET | `/api/events` | SSE live reload |
 
 ## Roadmap (cuando nos aburramos de solo mirar)
 

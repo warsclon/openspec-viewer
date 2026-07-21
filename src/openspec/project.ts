@@ -9,6 +9,7 @@ import {
   type ProjectRoot,
 } from "./discover.js";
 import { parseTasksMarkdown, readTasksFile, type ParsedTasks } from "./tasks.js";
+import { getChangeSpecDiffs, type SpecDiff } from "./spec-diff.js";
 
 const ARCHIVE_FOLDER_RE = /^(\d{4}-\d{2}-\d{2})-(.+)$/;
 
@@ -43,6 +44,7 @@ export type ChangeDetail = ChangeSummary & {
   design: string | null;
   tasks: ParsedTasks | null;
   specs: { id: string; content: string }[];
+  specDiffs: SpecDiff[];
 };
 
 export type MainSpecSummary = {
@@ -278,6 +280,7 @@ export function getChangeDetail(root: ProjectRoot, name: string): ChangeDetail {
     design: readTextIfExists(join(dir, "design.md")),
     tasks: existsSync(tasksPath) ? readTasksFile(tasksPath) : null,
     specs,
+    specDiffs: getChangeSpecDiffs(root, name),
   };
 }
 

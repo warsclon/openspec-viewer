@@ -76,7 +76,7 @@ async function main() {
     return;
   }
   if (opts.version) {
-    console.log("0.3.0");
+    console.log("0.4.0");
     return;
   }
 
@@ -94,7 +94,7 @@ async function main() {
   console.log(`  openspec: ${root.openspecDir}`);
   console.log(`  UI:       ${url}`);
   console.log("");
-  console.log("  Ctrl+C para salir (las tareas se guardan al vuelo en tasks.md)");
+  console.log("  Ctrl+C para salir · live reload on · ⌘K busca · #/change/… deep links");
   console.log("");
 
   if (opts.open) {

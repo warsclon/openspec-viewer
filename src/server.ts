@@ -12,7 +12,9 @@ import {
   listNextUp,
   tasksPathFor,
 } from "./openspec/project.js";
+import { searchProject } from "./openspec/search.js";
 import { toggleTaskFile } from "./openspec/tasks.js";
+import { watchOpenspec } from "./openspec/watch.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -67,6 +69,8 @@ function serveStatic(res: ServerResponse, urlPath: string) {
   sendText(res, 200, readFileSync(filePath, "utf8"), MIME[ext] ?? "application/octet-stream");
 }
 
+type SseClient = { id: number; res: ServerResponse };
+
 export type ServerOptions = {
   root: ProjectRoot;
   host?: string;
@@ -80,6 +84,24 @@ export function startServer(opts: ServerOptions) {
   const includeArchive = opts.includeArchive ?? true;
   const { root } = opts;
 
+  const sseClients = new Map<number, SseClient>();
+  let sseSeq = 1;
+
+  const broadcast = (event: string, data: unknown) => {
+    const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+    for (const client of sseClients.values()) {
+      try {
+        client.res.write(payload);
+      } catch {
+        sseClients.delete(client.id);
+      }
+    }
+  };
+
+  const watcher = watchOpenspec(root, (ev) => {
+    broadcast("reload", ev);
+  });
+
   const server = createServer(async (req, res) => {
     try {
       const url = new URL(req.url ?? "/", `http://${host}:${port}`);
@@ -87,11 +109,42 @@ export function startServer(opts: ServerOptions) {
       const method = req.method ?? "GET";
 
       if (method === "GET" && pathname === "/api/health") {
-        return sendJson(res, 200, { ok: true });
+        return sendJson(res, 200, { ok: true, watchers: sseClients.size });
+      }
+
+      if (method === "GET" && pathname === "/api/events") {
+        const id = sseSeq++;
+        res.writeHead(200, {
+          "Content-Type": "text/event-stream; charset=utf-8",
+          "Cache-Control": "no-cache, no-transform",
+          Connection: "keep-alive",
+        });
+        res.write(`event: hello\ndata: ${JSON.stringify({ ok: true, id })}\n\n`);
+        sseClients.set(id, { id, res });
+        const keepAlive = setInterval(() => {
+          try {
+            res.write(`: ping ${Date.now()}\n\n`);
+          } catch {
+            clearInterval(keepAlive);
+          }
+        }, 25000);
+        req.on("close", () => {
+          clearInterval(keepAlive);
+          sseClients.delete(id);
+        });
+        return;
       }
 
       if (method === "GET" && pathname === "/api/project") {
         return sendJson(res, 200, getProjectInfo(root));
+      }
+
+      if (method === "GET" && pathname === "/api/search") {
+        const q = url.searchParams.get("q") ?? "";
+        return sendJson(res, 200, {
+          query: q,
+          hits: searchProject(root, q, { includeArchive }),
+        });
       }
 
       if (method === "GET" && pathname === "/api/changes") {
@@ -137,6 +190,14 @@ export function startServer(opts: ServerOptions) {
         }
         const path = tasksPathFor(root, name);
         const { parsed, task } = toggleTaskFile(path, body.taskId, body.done);
+        broadcast("reload", {
+          type: "change",
+          path,
+          at: new Date().toISOString(),
+          reason: "toggle",
+          changeName: name,
+          taskId: body.taskId,
+        });
         return sendJson(res, 200, {
           task,
           completed: parsed.completed,
@@ -145,7 +206,10 @@ export function startServer(opts: ServerOptions) {
         });
       }
 
-      if (method === "GET" && (pathname === "/" || pathname.startsWith("/assets/") || pathname.match(/\.(css|js|svg)$/))) {
+      if (
+        method === "GET" &&
+        (pathname === "/" || pathname.startsWith("/assets/") || pathname.match(/\.(css|js|svg)$/))
+      ) {
         return serveStatic(res, pathname);
       }
 
@@ -164,6 +228,15 @@ export function startServer(opts: ServerOptions) {
         url,
         close: () =>
           new Promise((resClose, rejClose) => {
+            watcher.close();
+            for (const c of sseClients.values()) {
+              try {
+                c.res.end();
+              } catch {
+                // ignore
+              }
+            }
+            sseClients.clear();
             server.close((e) => (e ? rejClose(e) : resClose()));
           }),
       });
