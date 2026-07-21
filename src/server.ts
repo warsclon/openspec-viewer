@@ -4,6 +4,14 @@ import { dirname, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ProjectRoot } from "./openspec/discover.js";
 import {
+  applyTaskMutation,
+  archiveChange,
+  createChange,
+  writeArtifact,
+  type ArtifactName,
+} from "./openspec/mutate.js";
+import { readNotes, writeNotes } from "./openspec/notes.js";
+import {
   buildSpecChangeGraph,
   getChangeDetail,
   getOverview,
@@ -13,7 +21,7 @@ import {
   tasksPathFor,
 } from "./openspec/project.js";
 import { searchProject } from "./openspec/search.js";
-import { toggleTaskFile } from "./openspec/tasks.js";
+import { toggleTaskFile, type SectionDraft } from "./openspec/tasks.js";
 import { watchOpenspec } from "./openspec/watch.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -48,6 +56,12 @@ async function readBody(req: IncomingMessage): Promise<string> {
   return Buffer.concat(chunks).toString("utf8");
 }
 
+async function readJson<T>(req: IncomingMessage): Promise<T> {
+  const raw = await readBody(req);
+  if (!raw.trim()) return {} as T;
+  return JSON.parse(raw) as T;
+}
+
 function uiDir(): string {
   const candidates = [join(__dirname, "ui"), join(__dirname, "..", "src", "ui")];
   for (const c of candidates) {
@@ -77,6 +91,20 @@ export type ServerOptions = {
   port?: number;
   includeArchive?: boolean;
 };
+
+function tasksPayload(parsed: {
+  completed: number;
+  total: number;
+  sections: unknown;
+  raw?: string;
+}) {
+  return {
+    completed: parsed.completed,
+    total: parsed.total,
+    sections: parsed.sections,
+    raw: parsed.raw,
+  };
+}
 
 export function startServer(opts: ServerOptions) {
   const host = opts.host ?? "127.0.0.1";
@@ -157,6 +185,19 @@ export function startServer(opts: ServerOptions) {
         });
       }
 
+      if (method === "POST" && pathname === "/api/changes") {
+        const body = await readJson<{ name?: string; description?: string }>(req);
+        if (!body.name?.trim()) return sendJson(res, 400, { error: "name requerido" });
+        const created = await createChange(root, body.name, { description: body.description });
+        broadcast("reload", {
+          type: "change",
+          at: new Date().toISOString(),
+          reason: "create",
+          changeName: created.name,
+        });
+        return sendJson(res, 201, created);
+      }
+
       if (method === "GET" && pathname === "/api/graph") {
         const changes = listChanges(root, includeArchive);
         return sendJson(res, 200, buildSpecChangeGraph(root, changes));
@@ -170,7 +211,95 @@ export function startServer(opts: ServerOptions) {
       const changeMatch = pathname.match(/^\/api\/changes\/([^/]+)$/);
       if (method === "GET" && changeMatch) {
         const name = decodeURIComponent(changeMatch[1]);
-        return sendJson(res, 200, getChangeDetail(root, name));
+        const detail = getChangeDetail(root, name);
+        return sendJson(res, 200, {
+          ...detail,
+          notes: readNotes(root, name),
+        });
+      }
+
+      const archiveMatch = pathname.match(/^\/api\/changes\/([^/]+)\/archive$/);
+      if (method === "POST" && archiveMatch) {
+        const name = decodeURIComponent(archiveMatch[1]);
+        const body = await readJson<{ skipSpecs?: boolean; confirm?: boolean }>(req);
+        if (!body.confirm) {
+          return sendJson(res, 400, { error: "confirm: true requerido (no hay undo mágico)" });
+        }
+        const result = await archiveChange(root, name, { skipSpecs: body.skipSpecs });
+        broadcast("reload", {
+          type: "change",
+          at: new Date().toISOString(),
+          reason: "archive",
+          changeName: name,
+        });
+        return sendJson(res, 200, { ok: true, name, ...result });
+      }
+
+      const notesMatch = pathname.match(/^\/api\/changes\/([^/]+)\/notes$/);
+      if (notesMatch) {
+        const name = decodeURIComponent(notesMatch[1]);
+        if (method === "GET") {
+          return sendJson(res, 200, { content: readNotes(root, name) });
+        }
+        if (method === "PUT") {
+          const body = await readJson<{ content?: string }>(req);
+          const content = writeNotes(root, name, body.content ?? "");
+          return sendJson(res, 200, { content });
+        }
+      }
+
+      const artifactMatch = pathname.match(/^\/api\/changes\/([^/]+)\/(proposal|design|tasks)$/);
+      if (method === "PUT" && artifactMatch) {
+        const name = decodeURIComponent(artifactMatch[1]);
+        const artifact = artifactMatch[2] as ArtifactName;
+        const body = await readJson<{ content?: string; sections?: SectionDraft[] }>(req);
+
+        if (artifact === "tasks" && body.sections) {
+          const { parsed, path } = applyTaskMutation(root, name, {
+            type: "replace",
+            sections: body.sections,
+          });
+          broadcast("reload", {
+            type: "change",
+            path,
+            at: new Date().toISOString(),
+            reason: "tasks-replace",
+            changeName: name,
+          });
+          return sendJson(res, 200, tasksPayload(parsed));
+        }
+
+        if (typeof body.content !== "string") {
+          return sendJson(res, 400, { error: "content (string) requerido" });
+        }
+        const written = writeArtifact(root, name, artifact, body.content);
+        broadcast("reload", {
+          type: "change",
+          path: written.path,
+          at: new Date().toISOString(),
+          reason: `write-${artifact}`,
+          changeName: name,
+        });
+        if (artifact === "tasks") {
+          const { parseTasksMarkdown } = await import("./openspec/tasks.js");
+          return sendJson(res, 200, tasksPayload(parseTasksMarkdown(written.content)));
+        }
+        return sendJson(res, 200, { content: written.content });
+      }
+
+      const tasksMutateMatch = pathname.match(/^\/api\/changes\/([^/]+)\/tasks\/mutate$/);
+      if (method === "POST" && tasksMutateMatch) {
+        const name = decodeURIComponent(tasksMutateMatch[1]);
+        const body = await readJson<Parameters<typeof applyTaskMutation>[2]>(req);
+        const { parsed, path } = applyTaskMutation(root, name, body);
+        broadcast("reload", {
+          type: "change",
+          path,
+          at: new Date().toISOString(),
+          reason: "tasks-mutate",
+          changeName: name,
+        });
+        return sendJson(res, 200, tasksPayload(parsed));
       }
 
       const toggleMatch = pathname.match(/^\/api\/changes\/([^/]+)\/tasks\/toggle$/);
@@ -181,10 +310,7 @@ export function startServer(opts: ServerOptions) {
             error: "Change archivado es read-only (como los commits de prod un viernes).",
           });
         }
-        const body = JSON.parse((await readBody(req)) || "{}") as {
-          taskId?: string;
-          done?: boolean;
-        };
+        const body = await readJson<{ taskId?: string; done?: boolean }>(req);
         if (!body.taskId) {
           return sendJson(res, 400, { error: "taskId requerido" });
         }
@@ -200,9 +326,7 @@ export function startServer(opts: ServerOptions) {
         });
         return sendJson(res, 200, {
           task,
-          completed: parsed.completed,
-          total: parsed.total,
-          sections: parsed.sections,
+          ...tasksPayload(parsed),
         });
       }
 

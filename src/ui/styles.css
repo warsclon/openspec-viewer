@@ -900,6 +900,236 @@ html[data-theme="light"] .toast {
   border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
 }
 
+.section-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.section-label-row .section-label {
+  margin-bottom: 0;
+}
+
+.detail-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.65rem;
+}
+
+.btn {
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--border));
+  background: var(--accent);
+  color: #062016;
+  border-radius: 9px;
+  padding: 0.4rem 0.75rem;
+  font: inherit;
+  font-weight: 650;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.btn:hover {
+  filter: brightness(1.05);
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.btn.danger {
+  background: color-mix(in srgb, var(--danger) 85%, #111);
+  border-color: color-mix(in srgb, var(--danger) 50%, var(--border));
+  color: #fff;
+}
+
+html[data-theme="light"] .btn {
+  color: #fff;
+}
+
+.dialog-panel {
+  padding: 1rem 1.1rem 0.9rem;
+}
+
+.dialog-panel h3 {
+  margin: 0 0 0.75rem;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.field input,
+.section-title-input,
+.task-id-input,
+.task-text-input,
+.add-task-input {
+  border: 1px solid var(--border);
+  background: var(--bg-soft);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+  font: inherit;
+}
+
+.check-field {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.75rem 0;
+  font-size: 0.9rem;
+}
+
+.editor {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--bg-elev) 90%, transparent);
+  overflow: hidden;
+}
+
+.editor-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.65rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-soft);
+  flex-wrap: wrap;
+}
+
+.editor-body {
+  display: grid;
+  min-height: 320px;
+}
+
+.editor-body.mode-split {
+  grid-template-columns: 1fr 1fr;
+}
+
+.editor-body.mode-edit {
+  grid-template-columns: 1fr;
+}
+
+.editor-body.mode-edit .editor-preview {
+  display: none;
+}
+
+.editor-body.mode-preview {
+  grid-template-columns: 1fr;
+}
+
+.editor-body.mode-preview .editor-input {
+  display: none;
+}
+
+.editor-input {
+  border: 0;
+  border-right: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  padding: 0.9rem 1rem;
+  resize: vertical;
+  min-height: 320px;
+  outline: none;
+}
+
+.editor-preview {
+  padding: 0.9rem 1rem;
+  overflow: auto;
+  border-radius: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.editor-hint {
+  margin: 0;
+  padding: 0.45rem 0.8rem 0.65rem;
+  font-size: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.tasks-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.section-head {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-soft);
+}
+
+.section-title-input {
+  flex: 1;
+  font-weight: 650;
+}
+
+.task.editable {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.65rem;
+  align-items: start;
+}
+
+.task-edit-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.task-edit-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.4rem;
+}
+
+.task-edit-actions {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.icon-btn.danger {
+  color: var(--danger);
+}
+
+.add-task-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.45rem;
+  padding: 0.7rem 0.85rem 0.85rem;
+}
+
+.empty-tasks {
+  padding: 0.75rem 1rem;
+  margin: 0;
+}
+
 /* Live + search */
 .live-line {
   display: flex;

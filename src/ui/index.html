@@ -48,7 +48,10 @@
         </div>
 
         <div class="sidebar-section grow">
-          <div class="section-label">Changes</div>
+          <div class="section-label-row">
+            <div class="section-label">Changes</div>
+            <button type="button" class="chip" id="btn-new-change" title="Crear change">+ Nuevo</button>
+          </div>
           <div id="change-list" class="change-list"></div>
         </div>
 
@@ -107,12 +110,15 @@
                 <h2 id="detail-title">—</h2>
                 <p id="detail-sub" class="muted"></p>
               </div>
-              <div class="progress-block">
-                <div class="progress-meta">
-                  <span id="progress-label">0 / 0</span>
-                  <span id="progress-pct">0%</span>
+              <div class="detail-actions">
+                <div class="progress-block">
+                  <div class="progress-meta">
+                    <span id="progress-label">0 / 0</span>
+                    <span id="progress-pct">0%</span>
+                  </div>
+                  <div class="progress-bar"><div id="progress-fill"></div></div>
                 </div>
-                <div class="progress-bar"><div id="progress-fill"></div></div>
+                <button type="button" class="btn danger ghost hidden" id="btn-archive">Archivar…</button>
               </div>
             </header>
 
@@ -122,6 +128,7 @@
               <button type="button" data-tab="proposal" class="tab">Proposal</button>
               <button type="button" data-tab="design" class="tab">Design</button>
               <button type="button" data-tab="specs" class="tab">Specs</button>
+              <button type="button" data-tab="notes" class="tab">Notas</button>
             </nav>
 
             <section id="panel-tasks" class="panel"></section>
@@ -129,6 +136,7 @@
             <section id="panel-proposal" class="panel hidden"></section>
             <section id="panel-design" class="panel hidden"></section>
             <section id="panel-specs" class="panel hidden"></section>
+            <section id="panel-notes" class="panel hidden"></section>
           </div>
         </section>
       </main>
@@ -142,6 +150,17 @@
         </div>
         <div id="search-results" class="search-results"></div>
         <p class="search-foot muted">↵ abrir · ↑↓ navegar · esc cerrar</p>
+      </div>
+    </div>
+
+    <div id="dialog-modal" class="search-modal hidden" role="dialog" aria-modal="true">
+      <div class="search-panel dialog-panel">
+        <h3 id="dialog-title">Confirmar</h3>
+        <div id="dialog-body"></div>
+        <div class="dialog-actions">
+          <button type="button" class="btn ghost" id="dialog-cancel">Cancelar</button>
+          <button type="button" class="btn" id="dialog-ok">OK</button>
+        </div>
       </div>
     </div>
 

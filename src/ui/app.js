@@ -281,91 +281,337 @@ function setProgress(done, total, archived) {
   $("#progress-fill").style.width = `${p}%`;
 }
 
+function applyTasksResult(result) {
+  if (!state.detail) return;
+  state.detail.tasks = {
+    ...(state.detail.tasks || {}),
+    sections: result.sections,
+    completed: result.completed,
+    total: result.total,
+    raw: result.raw,
+  };
+  state.detail.completedTasks = result.completed;
+  state.detail.totalTasks = result.total;
+  state.detail.status =
+    result.total > 0 && result.completed >= result.total
+      ? "complete"
+      : result.total > 0
+        ? "in-progress"
+        : "empty";
+  state.detail.nextTask = nextTaskFromSections(result.sections);
+  const row = state.changes.find((c) => c.name === state.selected);
+  if (row) {
+    row.completedTasks = result.completed;
+    row.totalTasks = result.total;
+    row.status = state.detail.status;
+    row.progress = pct(result.completed, result.total);
+    row.nextTask = state.detail.nextTask;
+  }
+  rebuildNextUp();
+  setProgress(result.completed, result.total, false);
+  $("#detail-status").textContent = state.detail.status;
+}
+
+async function mutateTasks(action) {
+  const result = await api(`/api/changes/${encodeURIComponent(state.selected)}/tasks/mutate`, {
+    method: "POST",
+    body: JSON.stringify(action),
+  });
+  applyTasksResult(result);
+  renderTasks(state.detail);
+  refreshViews();
+  return result;
+}
+
 function renderTasks(detail) {
   const panel = $("#panel-tasks");
   const readonly = detail.archived;
-  if (!detail.tasks || !detail.tasks.total) {
-    panel.innerHTML = `<div class="md"><p class="muted">Sin tasks.md (o está vacío).</p></div>`;
+
+  if (!detail.tasks) {
+    panel.innerHTML = readonly
+      ? `<div class="md"><p class="muted">Sin tasks.md</p></div>`
+      : `<div class="tasks-empty"><p class="muted">Sin tasks.md todavía.</p>
+         <button type="button" class="btn" id="tasks-init">Crear tasks.md</button></div>`;
+    $("#tasks-init")?.addEventListener("click", async () => {
+      try {
+        await mutateTasks({
+          type: "replace",
+          sections: [{ title: "1. Implementation", tasks: [{ id: "1.1", text: "First task", done: false }] }],
+        });
+        toast("tasks.md creado");
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    });
     return;
   }
 
   panel.innerHTML =
     (readonly ? `<p class="banner">Archivado · solo lectura</p>` : "") +
+    `<div class="tasks-toolbar">${
+      readonly
+        ? ""
+        : `<button type="button" class="btn ghost" data-act="add-section">+ Sección</button>
+           <span class="muted">Edición live → tasks.md limpio</span>`
+    }</div>` +
     detail.tasks.sections
-      .map(
-        (sec) => `
-      <div class="section">
-        <h3>${escapeHtml(sec.title)}</h3>
-        ${sec.tasks
-          .map(
-            (t) => `
-          <label class="task ${t.done ? "done" : ""} ${readonly ? "readonly" : ""}">
-            <input type="checkbox" ${t.done ? "checked" : ""} ${readonly ? "disabled" : ""} data-task-id="${escapeHtml(t.id)}" />
-            <div>
-              <span class="task-id">${escapeHtml(t.id)}</span>
-              <span class="task-text">${escapeHtml(t.text)}</span>
-            </div>
-          </label>`,
-          )
-          .join("")}
-      </div>`,
-      )
+      .map((sec, si) => {
+        const tasksHtml = sec.tasks
+          .map((t) => {
+            if (readonly) {
+              return `<label class="task ${t.done ? "done" : ""} readonly">
+                <input type="checkbox" ${t.done ? "checked" : ""} disabled />
+                <div><span class="task-id">${escapeHtml(t.id)}</span><span class="task-text">${escapeHtml(t.text)}</span></div>
+              </label>`;
+            }
+            return `<div class="task editable ${t.done ? "done" : ""}" data-task-id="${escapeHtml(t.id)}">
+              <input type="checkbox" ${t.done ? "checked" : ""} data-act="toggle" data-task-id="${escapeHtml(t.id)}" />
+              <div class="task-edit-body">
+                <div class="task-edit-row">
+                  <input class="task-id-input" value="${escapeHtml(t.id)}" data-field="id" data-task-id="${escapeHtml(t.id)}" />
+                  <input class="task-text-input" value="${escapeHtml(t.text)}" data-field="text" data-task-id="${escapeHtml(t.id)}" />
+                </div>
+                <div class="task-edit-actions">
+                  <button type="button" class="icon-btn" data-act="up" data-task-id="${escapeHtml(t.id)}">↑</button>
+                  <button type="button" class="icon-btn" data-act="down" data-task-id="${escapeHtml(t.id)}">↓</button>
+                  <button type="button" class="icon-btn danger" data-act="delete" data-task-id="${escapeHtml(t.id)}">✕</button>
+                </div>
+              </div>
+            </div>`;
+          })
+          .join("");
+
+        return `<div class="section" data-si="${si}">
+          <div class="section-head">
+            ${
+              readonly
+                ? `<h3>${escapeHtml(sec.title)}</h3>`
+                : `<input class="section-title-input" value="${escapeHtml(sec.title)}" data-act="rename-section" data-si="${si}" />
+                   <button type="button" class="icon-btn danger" data-act="delete-section" data-si="${si}">✕</button>`
+            }
+          </div>
+          ${tasksHtml || `<p class="muted empty-tasks">Sin tasks</p>`}
+          ${
+            readonly
+              ? ""
+              : `<div class="add-task-row">
+                  <input type="text" class="add-task-input" placeholder="Nueva task…" data-si="${si}" />
+                  <button type="button" class="btn" data-act="add-task" data-si="${si}">Añadir</button>
+                </div>`
+          }
+        </div>`;
+      })
       .join("");
 
   if (readonly) return;
+  bindTasksEditor(panel);
+}
 
-  panel.querySelectorAll('input[type="checkbox"]').forEach((input) => {
-    input.addEventListener("change", async () => {
-      const taskId = input.dataset.taskId;
-      input.disabled = true;
+function bindTasksEditor(panel) {
+  panel.querySelector('[data-act="add-section"]')?.addEventListener("click", async () => {
+    const title = prompt("Título de sección", `${(state.detail.tasks?.sections?.length || 0) + 1}. Nueva fase`);
+    if (!title) return;
+    try {
+      await mutateTasks({ type: "add-section", title });
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  });
+
+  panel.querySelectorAll('[data-act="add-task"]').forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const si = Number(btn.dataset.si);
+      const input = panel.querySelector(`.add-task-input[data-si="${si}"]`);
+      const text = input?.value?.trim();
+      if (!text) return;
       try {
-        const result = await api(
-          `/api/changes/${encodeURIComponent(state.selected)}/tasks/toggle`,
-          {
-            method: "POST",
-            body: JSON.stringify({ taskId, done: input.checked }),
-          },
-        );
-        state.detail.tasks.sections = result.sections;
-        state.detail.tasks.completed = result.completed;
-        state.detail.tasks.total = result.total;
-        state.detail.completedTasks = result.completed;
-        state.detail.totalTasks = result.total;
-        state.detail.status =
-          result.total > 0 && result.completed >= result.total
-            ? "complete"
-            : result.total > 0
-              ? "in-progress"
-              : "empty";
-        const row = state.changes.find((c) => c.name === state.selected);
-        if (row) {
-          row.completedTasks = result.completed;
-          row.totalTasks = result.total;
-          row.status = state.detail.status;
-          row.progress = pct(result.completed, result.total);
-          row.nextTask = nextTaskFromSections(result.sections);
-        }
-        state.detail.nextTask = nextTaskFromSections(result.sections);
-        rebuildNextUp();
-        setProgress(result.completed, result.total, false);
-        $("#detail-status").textContent = state.detail.status;
-        renderChangeList();
-        renderTasks(state.detail);
-        refreshViews();
-        toast(`Task ${taskId} → ${input.checked ? "done" : "todo"}`);
+        await mutateTasks({ type: "add", sectionIndex: si, text });
+        toast("Task añadida");
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    });
+  });
+
+  panel.querySelectorAll(".add-task-input").forEach((input) => {
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        panel.querySelector(`[data-act="add-task"][data-si="${input.dataset.si}"]`)?.click();
+      }
+    });
+  });
+
+  panel.querySelectorAll('[data-act="toggle"]').forEach((input) => {
+    input.addEventListener("change", async () => {
+      try {
+        await mutateTasks({ type: "update", taskId: input.dataset.taskId, done: input.checked });
       } catch (err) {
         input.checked = !input.checked;
         toast(err.message, "error");
-      } finally {
-        input.disabled = false;
+      }
+    });
+  });
+
+  const commitField = async (el) => {
+    const taskId = el.dataset.taskId;
+    const field = el.dataset.field;
+    const sections = state.detail.tasks.sections.map((s) => ({
+      title: s.title,
+      tasks: s.tasks.map((t) => ({ id: t.id, text: t.text, done: t.done })),
+    }));
+    let found = false;
+    for (const s of sections) {
+      const t = s.tasks.find((x) => x.id === taskId);
+      if (!t) continue;
+      found = true;
+      if (field === "text") t.text = el.value;
+      if (field === "id") {
+        const newId = el.value.trim();
+        if (!newId) throw new Error("id vacío");
+        t.id = newId;
+      }
+    }
+    if (!found) throw new Error("task no encontrada");
+    await mutateTasks({ type: "replace", sections });
+  };
+
+  panel.querySelectorAll(".task-text-input, .task-id-input").forEach((el) => {
+    el.addEventListener("change", async () => {
+      try {
+        await commitField(el);
+      } catch (err) {
+        toast(err.message, "error");
+        renderTasks(state.detail);
+      }
+    });
+  });
+
+  panel.querySelectorAll('[data-act="up"], [data-act="down"], [data-act="delete"]').forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const taskId = btn.dataset.taskId;
+      try {
+        if (btn.dataset.act === "delete") {
+          if (!confirm(`¿Borrar task ${taskId}?`)) return;
+          await mutateTasks({ type: "delete", taskId });
+        } else {
+          await mutateTasks({ type: "move", taskId, direction: btn.dataset.act });
+        }
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    });
+  });
+
+  panel.querySelectorAll('[data-act="rename-section"]').forEach((el) => {
+    el.addEventListener("change", async () => {
+      try {
+        await mutateTasks({
+          type: "rename-section",
+          sectionIndex: Number(el.dataset.si),
+          title: el.value,
+        });
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    });
+  });
+
+  panel.querySelectorAll('[data-act="delete-section"]').forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("¿Borrar sección y sus tasks?")) return;
+      try {
+        await mutateTasks({ type: "delete-section", sectionIndex: Number(btn.dataset.si) });
+      } catch (err) {
+        toast(err.message, "error");
       }
     });
   });
 }
 
+function mountEditor(panel, { content, artifact, readonly }) {
+  if (readonly) {
+    panel.innerHTML = `<div class="md">${mdToHtml(content)}</div>`;
+    return;
+  }
+  panel.innerHTML = `
+    <div class="editor" data-artifact="${artifact}">
+      <div class="editor-toolbar">
+        <div class="chip-row mode-row">
+          <button type="button" class="chip active" data-mode="split">Split</button>
+          <button type="button" class="chip" data-mode="edit">Edit</button>
+          <button type="button" class="chip" data-mode="preview">Preview</button>
+        </div>
+        <button type="button" class="btn" data-save>Guardar</button>
+      </div>
+      <div class="editor-body mode-split">
+        <textarea class="editor-input" spellcheck="false"></textarea>
+        <div class="md editor-preview"></div>
+      </div>
+      <p class="muted editor-hint">${
+        artifact === "notes"
+          ? "Notas locales en .openspec-viewer/ (gitignored)"
+          : `Escribe ${artifact}.md del change`
+      }</p>
+    </div>`;
+  const ta = panel.querySelector(".editor-input");
+  const preview = panel.querySelector(".editor-preview");
+  const body = panel.querySelector(".editor-body");
+  ta.value = content ?? "";
+  const refresh = () => {
+    preview.innerHTML = mdToHtml(ta.value);
+  };
+  refresh();
+  ta.addEventListener("input", refresh);
+
+  panel.querySelectorAll("[data-mode]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      panel.querySelectorAll("[data-mode]").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      body.className = `editor-body mode-${btn.dataset.mode}`;
+    });
+  });
+
+  panel.querySelector("[data-save]")?.addEventListener("click", async () => {
+    try {
+      if (artifact === "notes") {
+        const res = await api(`/api/changes/${encodeURIComponent(state.selected)}/notes`, {
+          method: "PUT",
+          body: JSON.stringify({ content: ta.value }),
+        });
+        state.detail.notes = res.content;
+        toast("Notas guardadas (local)");
+      } else {
+        const res = await api(`/api/changes/${encodeURIComponent(state.selected)}/${artifact}`, {
+          method: "PUT",
+          body: JSON.stringify({ content: ta.value }),
+        });
+        state.detail[artifact] = res.content ?? ta.value;
+        toast(`${artifact}.md guardado`);
+      }
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  });
+}
+
 function renderMarkdownPanels(detail) {
-  $("#panel-proposal").innerHTML = `<div class="md">${mdToHtml(detail.proposal)}</div>`;
-  $("#panel-design").innerHTML = `<div class="md">${mdToHtml(detail.design)}</div>`;
+  mountEditor($("#panel-proposal"), {
+    artifact: "proposal",
+    content: detail.proposal ?? "",
+    readonly: detail.archived,
+  });
+  mountEditor($("#panel-design"), {
+    artifact: "design",
+    content: detail.design ?? "",
+    readonly: detail.archived,
+  });
+  mountEditor($("#panel-notes"), {
+    artifact: "notes",
+    content: detail.notes ?? "",
+    readonly: false,
+  });
+
   if (!detail.specs?.length) {
     $("#panel-specs").innerHTML = `<div class="md"><p class="muted">Sin delta specs.</p></div>`;
   } else {
@@ -429,7 +675,7 @@ function renderDiff(detail) {
 }
 
 function showTab(tab, opts = {}) {
-  const allowed = ["tasks", "diff", "proposal", "design", "specs"];
+  const allowed = ["tasks", "diff", "proposal", "design", "specs", "notes"];
   state.tab = allowed.includes(tab) ? tab : "tasks";
   document.querySelectorAll(".tab").forEach((b) => {
     b.classList.toggle("active", b.dataset.tab === state.tab);
@@ -438,6 +684,96 @@ function showTab(tab, opts = {}) {
     $(`#panel-${name}`).classList.toggle("hidden", name !== state.tab);
   });
   if (!opts.silent) writeHash();
+}
+
+function showDialog({ title, bodyHtml, okLabel = "OK", danger = false }) {
+  return new Promise((resolve) => {
+    const modal = $("#dialog-modal");
+    $("#dialog-title").textContent = title;
+    $("#dialog-body").innerHTML = bodyHtml;
+    const ok = $("#dialog-ok");
+    ok.textContent = okLabel;
+    ok.className = danger ? "btn danger" : "btn";
+    modal.classList.remove("hidden");
+
+    const cleanup = (value) => {
+      modal.classList.add("hidden");
+      ok.onclick = null;
+      $("#dialog-cancel").onclick = null;
+      resolve(value);
+    };
+    ok.onclick = () => cleanup(true);
+    $("#dialog-cancel").onclick = () => cleanup(false);
+  });
+}
+
+async function promptNewChange() {
+  const ok = await showDialog({
+    title: "Nuevo change",
+    okLabel: "Crear",
+    bodyHtml: `
+      <label class="field">
+        <span>Nombre (kebab-case)</span>
+        <input id="dlg-name" placeholder="add-dark-mode" />
+      </label>
+      <label class="field">
+        <span>Descripción (opcional)</span>
+        <input id="dlg-desc" placeholder="Qué y por qué" />
+      </label>
+      <p class="muted">Usa <code>openspec new change</code> bajo el capó (o scaffold local si no hay CLI).</p>`,
+  });
+  if (!ok) return;
+  const name = $("#dlg-name")?.value?.trim();
+  const description = $("#dlg-desc")?.value?.trim();
+  if (!name) {
+    toast("Nombre requerido", "error");
+    return;
+  }
+  try {
+    const created = await api("/api/changes", {
+      method: "POST",
+      body: JSON.stringify({ name, description }),
+    });
+    await loadData({ quiet: true });
+    await openDetail(created.name);
+    toast(`Change ${created.name} creado`);
+  } catch (err) {
+    toast(err.message, "error");
+  }
+}
+
+async function promptArchive() {
+  if (!state.selected || state.detail?.archived) return;
+  const ok = await showDialog({
+    title: `Archivar ${state.detail?.displayName || state.selected}`,
+    okLabel: "Archivar",
+    danger: true,
+    bodyHtml: `
+      <p>Esto ejecuta <code>openspec archive</code> y mueve el change a <code>changes/archive/</code>.</p>
+      <label class="check-field">
+        <input type="checkbox" id="dlg-skip-specs" />
+        <span>Skip specs (infra/docs only)</span>
+      </label>
+      <p class="muted">No hay Ctrl+Z. Revisa el diff antes si no quieres sorpresas en main specs.</p>`,
+  });
+  if (!ok) return;
+  const skipSpecs = Boolean($("#dlg-skip-specs")?.checked);
+  try {
+    await api(`/api/changes/${encodeURIComponent(state.selected)}/archive`, {
+      method: "POST",
+      body: JSON.stringify({ confirm: true, skipSpecs }),
+    });
+    state.selected = null;
+    state.detail = null;
+    $("#detail").classList.add("hidden");
+    $("#empty-state").classList.remove("hidden");
+    $("#btn-archive").classList.add("hidden");
+    await loadData({ quiet: true });
+    setView("timeline");
+    toast("Change archivado");
+  } catch (err) {
+    toast(err.message, "error");
+  }
 }
 
 function nextTaskFromSections(sections) {
@@ -1012,6 +1348,10 @@ async function openDetail(name, opts = {}) {
     .filter(Boolean)
     .join(" ");
   setProgress(detail.completedTasks, detail.totalTasks, detail.archived);
+  const archiveBtn = $("#btn-archive");
+  if (archiveBtn) {
+    archiveBtn.classList.toggle("hidden", Boolean(detail.archived));
+  }
   renderTasks(detail);
   renderMarkdownPanels(detail);
   showTab(opts.tab || state.tab || "tasks", { silent: true });
@@ -1272,6 +1612,13 @@ async function init() {
     state.focusSpec = state.focusSpec === chip.dataset.spec ? null : chip.dataset.spec;
     setView("graph");
     renderStats();
+  });
+
+  $("#btn-new-change")?.addEventListener("click", () => {
+    promptNewChange();
+  });
+  $("#btn-archive")?.addEventListener("click", () => {
+    promptArchive();
   });
 }
 
