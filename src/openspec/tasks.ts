@@ -136,7 +136,7 @@ export function toggleTaskInMarkdown(
   }
 
   if (!target) {
-    throw new Error(`Task no encontrada: ${taskRef}`);
+    throw new Error(`Task not found: ${taskRef}`);
   }
 
   const drafts = sectionsFromParsed(parsed);
@@ -223,19 +223,19 @@ export function mutateTasks(
   }
 
   if (action.type === "rename-section") {
-    if (!next[action.sectionIndex]) throw new Error("Sección no encontrada");
+    if (!next[action.sectionIndex]) throw new Error("Section not found");
     next[action.sectionIndex].title = action.title.trim() || next[action.sectionIndex].title;
     return next;
   }
 
   if (action.type === "delete-section") {
-    if (!next[action.sectionIndex]) throw new Error("Sección no encontrada");
+    if (!next[action.sectionIndex]) throw new Error("Section not found");
     next.splice(action.sectionIndex, 1);
     return next.length ? next : [{ title: "Tasks", tasks: [] }];
   }
 
   if (action.type === "add") {
-    if (!next[action.sectionIndex]) throw new Error("Sección no encontrada");
+    if (!next[action.sectionIndex]) throw new Error("Section not found");
     const id = action.id?.trim() || nextTaskId(next, action.sectionIndex);
     next[action.sectionIndex].tasks.push({
       id,
@@ -250,7 +250,7 @@ export function mutateTasks(
       const ti = next[si].tasks.findIndex((t) => t.id === taskId);
       if (ti >= 0) return { si, ti };
     }
-    throw new Error(`Task no encontrada: ${taskId}`);
+    throw new Error(`Task not found: ${taskId}`);
   };
 
   if (action.type === "update") {

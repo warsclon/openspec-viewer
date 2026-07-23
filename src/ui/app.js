@@ -50,8 +50,8 @@ function applyTheme(theme) {
   writePref(PREFS_THEME, state.theme);
   const btn = $("#theme-toggle");
   if (btn) {
-    btn.setAttribute("aria-label", state.theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
-    btn.title = state.theme === "dark" ? "Modo claro" : "Modo oscuro";
+    btn.setAttribute("aria-label", state.theme === "dark" ? "Switch to light mode" : "Switch to dark mode");
+    btn.title = state.theme === "dark" ? "Light mode" : "Dark mode";
   }
 }
 
@@ -136,7 +136,7 @@ function formatDate(isoOrDay) {
 
 /** Tiny markdown → HTML */
 function mdToHtml(src) {
-  if (!src) return `<p class="muted">Sin contenido.</p>`;
+  if (!src) return `<p class="muted">No content.</p>`;
   const lines = src.replace(/\r\n/g, "\n").split("\n");
   const out = [];
   let inCode = false;
@@ -226,20 +226,20 @@ function renderStats() {
     return;
   }
   $("#stats").innerHTML = `
-    <div class="stat"><span class="stat-n">${o.active}</span><span class="stat-l">activos</span></div>
-    <div class="stat"><span class="stat-n">${o.archived}</span><span class="stat-l">archivados</span></div>
+    <div class="stat"><span class="stat-n">${o.active}</span><span class="stat-l">active</span></div>
+    <div class="stat"><span class="stat-n">${o.archived}</span><span class="stat-l">archived</span></div>
     <div class="stat"><span class="stat-n">${o.completedTasks}/${o.totalTasks}</span><span class="stat-l">tasks</span></div>
     <div class="stat"><span class="stat-n">${o.mainSpecs.length}</span><span class="stat-l">specs</span></div>
   `;
 
   const specs = $("#main-specs");
   if (!o.mainSpecs.length) {
-    specs.innerHTML = `<span class="muted">Sin specs main aún</span>`;
+    specs.innerHTML = `<span class="muted">No main specs yet</span>`;
   } else {
     specs.innerHTML = o.mainSpecs
       .map(
         (s) =>
-          `<button type="button" class="spec-chip ${state.focusSpec === s.id ? "active" : ""}" data-spec="${escapeHtml(s.id)}" title="Ver en grafo">${escapeHtml(s.id)}</button>`,
+          `<button type="button" class="spec-chip ${state.focusSpec === s.id ? "active" : ""}" data-spec="${escapeHtml(s.id)}" title="View in graph">${escapeHtml(s.id)}</button>`,
       )
       .join("");
   }
@@ -249,7 +249,7 @@ function renderChangeList() {
   const root = $("#change-list");
   const items = filteredChanges();
   if (!items.length) {
-    root.innerHTML = `<p class="muted">Nada con este filtro.</p>`;
+    root.innerHTML = `<p class="muted">Nothing matches this filter.</p>`;
     return;
   }
   root.innerHTML = items
@@ -329,16 +329,16 @@ function renderTasks(detail) {
 
   if (!detail.tasks) {
     panel.innerHTML = readonly
-      ? `<div class="md"><p class="muted">Sin tasks.md</p></div>`
-      : `<div class="tasks-empty"><p class="muted">Sin tasks.md todavía.</p>
-         <button type="button" class="btn" id="tasks-init">Crear tasks.md</button></div>`;
+      ? `<div class="md"><p class="muted">No tasks.md</p></div>`
+      : `<div class="tasks-empty"><p class="muted">No tasks.md yet.</p>
+         <button type="button" class="btn" id="tasks-init">Create tasks.md</button></div>`;
     $("#tasks-init")?.addEventListener("click", async () => {
       try {
         await mutateTasks({
           type: "replace",
           sections: [{ title: "1. Implementation", tasks: [{ id: "1.1", text: "First task", done: false }] }],
         });
-        toast("tasks.md creado");
+        toast("tasks.md created");
       } catch (err) {
         toast(err.message, "error");
       }
@@ -347,12 +347,12 @@ function renderTasks(detail) {
   }
 
   panel.innerHTML =
-    (readonly ? `<p class="banner">Archivado · solo lectura</p>` : "") +
+    (readonly ? `<p class="banner">Archived · read-only</p>` : "") +
     `<div class="tasks-toolbar">${
       readonly
         ? ""
-        : `<button type="button" class="btn ghost" data-act="add-section">+ Sección</button>
-           <span class="muted">Edición live → tasks.md limpio</span>`
+        : `<button type="button" class="btn ghost" data-act="add-section">+ Section</button>
+           <span class="muted">Live editing → clean tasks.md</span>`
     }</div>` +
     detail.tasks.sections
       .map((sec, si) => {
@@ -390,13 +390,13 @@ function renderTasks(detail) {
                    <button type="button" class="icon-btn danger" data-act="delete-section" data-si="${si}">✕</button>`
             }
           </div>
-          ${tasksHtml || `<p class="muted empty-tasks">Sin tasks</p>`}
+          ${tasksHtml || `<p class="muted empty-tasks">No tasks</p>`}
           ${
             readonly
               ? ""
               : `<div class="add-task-row">
-                  <input type="text" class="add-task-input" placeholder="Nueva task…" data-si="${si}" />
-                  <button type="button" class="btn" data-act="add-task" data-si="${si}">Añadir</button>
+                  <input type="text" class="add-task-input" placeholder="New task…" data-si="${si}" />
+                  <button type="button" class="btn" data-act="add-task" data-si="${si}">Add</button>
                 </div>`
           }
         </div>`;
@@ -409,7 +409,7 @@ function renderTasks(detail) {
 
 function bindTasksEditor(panel) {
   panel.querySelector('[data-act="add-section"]')?.addEventListener("click", async () => {
-    const title = prompt("Título de sección", `${(state.detail.tasks?.sections?.length || 0) + 1}. Nueva fase`);
+    const title = prompt("Section title", `${(state.detail.tasks?.sections?.length || 0) + 1}. New phase`);
     if (!title) return;
     try {
       await mutateTasks({ type: "add-section", title });
@@ -426,7 +426,7 @@ function bindTasksEditor(panel) {
       if (!text) return;
       try {
         await mutateTasks({ type: "add", sectionIndex: si, text });
-        toast("Task añadida");
+        toast("Task added");
       } catch (err) {
         toast(err.message, "error");
       }
@@ -468,11 +468,11 @@ function bindTasksEditor(panel) {
       if (field === "text") t.text = el.value;
       if (field === "id") {
         const newId = el.value.trim();
-        if (!newId) throw new Error("id vacío");
+        if (!newId) throw new Error("ID cannot be empty");
         t.id = newId;
       }
     }
-    if (!found) throw new Error("task no encontrada");
+    if (!found) throw new Error("Task not found");
     await mutateTasks({ type: "replace", sections });
   };
 
@@ -492,7 +492,7 @@ function bindTasksEditor(panel) {
       const taskId = btn.dataset.taskId;
       try {
         if (btn.dataset.act === "delete") {
-          if (!confirm(`¿Borrar task ${taskId}?`)) return;
+          if (!confirm(`Delete task ${taskId}?`)) return;
           await mutateTasks({ type: "delete", taskId });
         } else {
           await mutateTasks({ type: "move", taskId, direction: btn.dataset.act });
@@ -519,7 +519,7 @@ function bindTasksEditor(panel) {
 
   panel.querySelectorAll('[data-act="delete-section"]').forEach((btn) => {
     btn.addEventListener("click", async () => {
-      if (!confirm("¿Borrar sección y sus tasks?")) return;
+      if (!confirm("Delete section and its tasks?")) return;
       try {
         await mutateTasks({ type: "delete-section", sectionIndex: Number(btn.dataset.si) });
       } catch (err) {
@@ -542,7 +542,7 @@ function mountEditor(panel, { content, artifact, readonly }) {
           <button type="button" class="chip" data-mode="edit">Edit</button>
           <button type="button" class="chip" data-mode="preview">Preview</button>
         </div>
-        <button type="button" class="btn" data-save>Guardar</button>
+        <button type="button" class="btn" data-save>Save</button>
       </div>
       <div class="editor-body mode-split">
         <textarea class="editor-input" spellcheck="false"></textarea>
@@ -550,8 +550,8 @@ function mountEditor(panel, { content, artifact, readonly }) {
       </div>
       <p class="muted editor-hint">${
         artifact === "notes"
-          ? "Notas locales en .openspec-viewer/ (gitignored)"
-          : `Escribe ${artifact}.md del change`
+          ? "Local notes in .openspec-viewer/ (gitignored)"
+          : `Edit this change's ${artifact}.md`
       }</p>
     </div>`;
   const ta = panel.querySelector(".editor-input");
@@ -580,14 +580,14 @@ function mountEditor(panel, { content, artifact, readonly }) {
           body: JSON.stringify({ content: ta.value }),
         });
         state.detail.notes = res.content;
-        toast("Notas guardadas (local)");
+        toast("Notes saved locally");
       } else {
         const res = await api(`/api/changes/${encodeURIComponent(state.selected)}/${artifact}`, {
           method: "PUT",
           body: JSON.stringify({ content: ta.value }),
         });
         state.detail[artifact] = res.content ?? ta.value;
-        toast(`${artifact}.md guardado`);
+        toast(`${artifact}.md saved`);
       }
     } catch (err) {
       toast(err.message, "error");
@@ -613,7 +613,7 @@ function renderMarkdownPanels(detail) {
   });
 
   if (!detail.specs?.length) {
-    $("#panel-specs").innerHTML = `<div class="md"><p class="muted">Sin delta specs.</p></div>`;
+    $("#panel-specs").innerHTML = `<div class="md"><p class="muted">No delta specs.</p></div>`;
   } else {
     $("#panel-specs").innerHTML = detail.specs
       .map(
@@ -632,7 +632,7 @@ function renderDiff(detail) {
   const panel = $("#panel-diff");
   const diffs = detail.specDiffs || [];
   if (!diffs.length) {
-    panel.innerHTML = `<div class="md"><p class="muted">Este change no trae delta specs. Nada que comparar (todavía).</p></div>`;
+    panel.innerHTML = `<div class="md"><p class="muted">This change has no delta specs. There is nothing to compare yet.</p></div>`;
     return;
   }
 
@@ -653,14 +653,14 @@ function renderDiff(detail) {
             </div>`,
               )
               .join("")
-          : `<p class="muted">Sin headers ADDED/MODIFIED/REMOVED detectados. Revisa el delta crudo en Specs.</p>`;
+          : `<p class="muted">No ADDED/MODIFIED/REMOVED headers detected. Review the raw delta under Specs.</p>`;
 
       return `
         <div class="diff-card">
           <header class="diff-card-head">
             <div>
               <h3>${escapeHtml(d.id)}</h3>
-              <p class="muted">${d.mainExists ? "main existe" : "spec nueva (no está en main aún)"}</p>
+              <p class="muted">${d.mainExists ? "main exists" : "new spec (not in main yet)"}</p>
             </div>
             <div class="diff-counts">
               <span class="diff-count add">+${s.added}</span>
@@ -709,24 +709,24 @@ function showDialog({ title, bodyHtml, okLabel = "OK", danger = false }) {
 
 async function promptNewChange() {
   const ok = await showDialog({
-    title: "Nuevo change",
-    okLabel: "Crear",
+    title: "New change",
+    okLabel: "Create",
     bodyHtml: `
       <label class="field">
-        <span>Nombre (kebab-case)</span>
+        <span>Name (kebab-case)</span>
         <input id="dlg-name" placeholder="add-dark-mode" />
       </label>
       <label class="field">
-        <span>Descripción (opcional)</span>
-        <input id="dlg-desc" placeholder="Qué y por qué" />
+        <span>Description (optional)</span>
+        <input id="dlg-desc" placeholder="What and why" />
       </label>
-      <p class="muted">Usa <code>openspec new change</code> bajo el capó (o scaffold local si no hay CLI).</p>`,
+      <p class="muted">Uses <code>openspec new change</code> when the CLI is available, with a local scaffold fallback.</p>`,
   });
   if (!ok) return;
   const name = $("#dlg-name")?.value?.trim();
   const description = $("#dlg-desc")?.value?.trim();
   if (!name) {
-    toast("Nombre requerido", "error");
+    toast("Name is required", "error");
     return;
   }
   try {
@@ -745,16 +745,16 @@ async function promptNewChange() {
 async function promptArchive() {
   if (!state.selected || state.detail?.archived) return;
   const ok = await showDialog({
-    title: `Archivar ${state.detail?.displayName || state.selected}`,
-    okLabel: "Archivar",
+    title: `Archive ${state.detail?.displayName || state.selected}`,
+    okLabel: "Archive",
     danger: true,
     bodyHtml: `
-      <p>Esto ejecuta <code>openspec archive</code> y mueve el change a <code>changes/archive/</code>.</p>
+      <p>This runs <code>openspec archive</code> and moves the change to <code>changes/archive/</code>.</p>
       <label class="check-field">
         <input type="checkbox" id="dlg-skip-specs" />
         <span>Skip specs (infra/docs only)</span>
       </label>
-      <p class="muted">No hay Ctrl+Z. Revisa el diff antes si no quieres sorpresas en main specs.</p>`,
+      <p class="muted">There is no Ctrl+Z. Review the diff first to avoid surprises in main specs.</p>`,
   });
   if (!ok) return;
   const skipSpecs = Boolean($("#dlg-skip-specs")?.checked);
@@ -770,7 +770,7 @@ async function promptArchive() {
     $("#btn-archive").classList.add("hidden");
     await loadData({ quiet: true });
     setView("timeline");
-    toast("Change archivado");
+    toast("Change archived");
   } catch (err) {
     toast(err.message, "error");
   }
@@ -811,11 +811,11 @@ function setView(view, opts = {}) {
     $(`#view-${name}`).classList.toggle("hidden", name !== state.view);
   });
   const hints = {
-    next: "Siguiente task incompleta de cada change activo — modo ‘qué hago ahora’",
-    graph: "Specs main ↔ changes (edges = deltas que tocaron esa spec)",
-    timeline: "Evolución por fecha (archive date o última edición)",
-    board: "Kanban: activos / en curso / hechos / archivados",
-    detail: "Proposal, design, specs, diff y tasks del change seleccionado",
+    next: "Next incomplete task for each active change — your “what now?” view",
+    graph: "Main specs ↔ changes (edges are deltas that touched the spec)",
+    timeline: "Evolution by archive date or last edit",
+    board: "Kanban: active / in progress / done / archived",
+    detail: "Proposal, design, specs, diff, and tasks for the selected change",
   };
   $("#view-hint").textContent = hints[state.view];
   if (state.view === "graph") renderGraph();
@@ -947,14 +947,14 @@ function renderNext() {
   if (!items.length) {
     root.innerHTML = `
       <div class="empty">
-        <h2>Nada en cola</h2>
+        <h2>Nothing in the queue</h2>
         <p class="muted">
           ${
             state.changes.some((c) => !c.archived)
               ? activeDone.length
-                ? "Todos los changes activos tienen tasks al 100%. Hora de archive (o de inventar más trabajo)."
-                : "No hay next task: falta tasks.md o está vacío."
-              : "No hay changes activos. Mira Timeline/Grafo para la historia archivada."
+                ? "Every active change is at 100%. Time to archive it (or invent more work)."
+                : "There is no next task: tasks.md is missing or empty."
+              : "There are no active changes. Open Timeline/Graph for the archived history."
           }
         </p>
       </div>`;
@@ -964,13 +964,13 @@ function renderNext() {
   root.innerHTML = `
     <div class="next-hero">
       <div>
-        <p class="eyebrow">Ahora</p>
-        <h2>${items.length} siguiente${items.length === 1 ? "" : "s"}</h2>
-        <p class="muted">Una task por change activo, ordenadas por momentum (más avanzados primero).</p>
+        <p class="eyebrow">Now</p>
+        <h2>${items.length} next ${items.length === 1 ? "task" : "tasks"}</h2>
+        <p class="muted">One task per active change, ordered by momentum (most advanced first).</p>
       </div>
       <div class="next-meta muted">
-        ${activeDone.length ? `${activeDone.length} listo(s) p/ archive` : ""}
-        ${activeEmpty.length ? ` · ${activeEmpty.length} sin next` : ""}
+        ${activeDone.length ? `${activeDone.length} ready to archive` : ""}
+        ${activeEmpty.length ? ` · ${activeEmpty.length} without a next task` : ""}
       </div>
     </div>
     <div class="next-list">
@@ -1044,7 +1044,7 @@ function renderNext() {
         }
         rebuildNextUp();
         refreshViews();
-        toast(`${taskId} done · next actualizado`);
+        toast(`${taskId} done · next updated`);
       } catch (err) {
         input.checked = false;
         toast(err.message, "error");
@@ -1064,7 +1064,7 @@ function renderGraph() {
     .sort((a, b) => b.degree - a.degree || a.label.localeCompare(b.label));
 
   if (!specs.length && !changes.length) {
-    root.innerHTML = `<div class="empty"><h2>Grafo vacío</h2><p class="muted">No hay deltas de specs con este filtro.</p></div>`;
+    root.innerHTML = `<div class="empty"><h2>Empty graph</h2><p class="muted">No spec deltas match this filter.</p></div>`;
     return;
   }
 
@@ -1112,7 +1112,7 @@ function renderGraph() {
         <g class="${cls}" data-id="${escapeHtml(n.id)}" data-spec="${escapeHtml(n.label)}" transform="translate(${p.x},${p.y})">
           <circle r="18"></circle>
           <text class="g-label" x="28" y="5">${escapeHtml(n.label)}</text>
-          <text class="g-sub" x="28" y="20">${n.main ? "main" : "solo delta"} · ${n.degree}</text>
+          <text class="g-sub" x="28" y="20">${n.main ? "main" : "delta only"} · ${n.degree}</text>
         </g>`;
     })
     .join("");
@@ -1137,20 +1137,20 @@ function renderGraph() {
     <div class="graph-toolbar">
       <div class="chip-row">
         <span class="legend"><i class="swatch spec-main"></i> Spec main</span>
-        <span class="legend"><i class="swatch spec-delta"></i> Spec solo en delta</span>
+        <span class="legend"><i class="swatch spec-delta"></i> Delta-only spec</span>
         <span class="legend"><i class="swatch change"></i> Change</span>
       </div>
       <div class="graph-actions">
         ${
           state.focusSpec
             ? `<button type="button" class="chip active" id="clear-focus">Focus: ${escapeHtml(state.focusSpec)} ✕</button>`
-            : `<span class="muted">Click una spec para enfocar</span>`
+            : `<span class="muted">Click a spec to focus</span>`
         }
-        <span class="muted">${edges.length} enlace${edges.length === 1 ? "" : "s"} · ${specs.length} specs · ${changes.length} changes</span>
+        <span class="muted">${edges.length} ${edges.length === 1 ? "link" : "links"} · ${specs.length} specs · ${changes.length} changes</span>
       </div>
     </div>
     <div class="graph-wrap">
-      <svg class="graph-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Grafo specs y changes">
+      <svg class="graph-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Specs and changes graph">
         <text class="g-col-title" x="${leftX}" y="16">Specs</text>
         <text class="g-col-title" x="${rightX}" y="16" text-anchor="end">Changes</text>
         <g class="g-edges">${lines}</g>
@@ -1207,13 +1207,13 @@ function renderTimeline() {
   const root = $("#view-timeline");
   const items = filteredChanges();
   if (!items.length) {
-    root.innerHTML = `<div class="empty"><h2>Sin changes</h2><p class="muted">Este filtro no encuentra historia. Prueba “Todos”.</p></div>`;
+    root.innerHTML = `<div class="empty"><h2>No changes</h2><p class="muted">This filter found no history. Try “All”.</p></div>`;
     return;
   }
 
   const groups = new Map();
   for (const c of items) {
-    const key = c.archiveDate || (c.sortDate ? c.sortDate.slice(0, 10) : "sin-fecha");
+    const key = c.archiveDate || (c.sortDate ? c.sortDate.slice(0, 10) : "no-date");
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(c);
   }
@@ -1269,26 +1269,26 @@ function renderBoard() {
   const cols = [
     {
       id: "active-wip",
-      title: "Activos",
-      hint: "en curso",
+      title: "Active",
+      hint: "in progress",
       items: items.filter((c) => !c.archived && c.status === "in-progress"),
     },
     {
       id: "active-empty",
-      title: "Planificando",
-      hint: "sin tasks o vacíos",
+      title: "Planning",
+      hint: "missing or empty tasks",
       items: items.filter((c) => !c.archived && c.status === "empty"),
     },
     {
       id: "active-done",
-      title: "Listos p/ archive",
-      hint: "tasks al 100%",
+      title: "Ready to archive",
+      hint: "tasks at 100%",
       items: items.filter((c) => !c.archived && c.status === "complete"),
     },
     {
       id: "archived",
-      title: "Archivados",
-      hint: "historia",
+      title: "Archived",
+      hint: "history",
       items: items.filter((c) => c.archived),
     },
   ];
@@ -1307,7 +1307,7 @@ function renderBoard() {
             ${
               col.items.length
                 ? col.items.map((c) => cardHtml(c)).join("")
-                : `<p class="muted empty-col">Vacío</p>`
+                : `<p class="muted empty-col">Empty</p>`
             }
           </div>
         </div>`,
@@ -1407,7 +1407,7 @@ function setLive(status, label) {
 
 function connectLive() {
   if (typeof EventSource === "undefined") {
-    setLive("offline", "sin SSE");
+    setLive("offline", "no SSE");
     return;
   }
   const es = new EventSource("/api/events");
@@ -1438,7 +1438,7 @@ function connectLive() {
     }, 200);
   });
   es.onerror = () => {
-    setLive("offline", "reconectando…");
+    setLive("offline", "reconnecting…");
   };
   es.onopen = () => setLive("live", "live");
 }
@@ -1463,7 +1463,7 @@ function closeSearch() {
 function renderSearchResults() {
   const root = $("#search-results");
   if (!state.searchHits.length) {
-    root.innerHTML = `<p class="muted search-empty">Escribe para buscar en changes, tasks, proposal, design y specs.</p>`;
+    root.innerHTML = `<p class="muted search-empty">Type to search changes, tasks, proposals, designs, and specs.</p>`;
     return;
   }
   root.innerHTML = state.searchHits

@@ -35,7 +35,7 @@ export function findOpenspecRoot(startDir: string): ProjectRoot {
   }
 
   throw new Error(
-    `No se encontró carpeta openspec/ desde ${resolve(startDir)}. ¿Estás en un proyecto con OpenSpec? (spoiler: openspec init ayuda)`,
+    `No openspec/ folder found from ${resolve(startDir)}. Initialize with: openspec init`,
   );
 }
 
@@ -59,7 +59,7 @@ export function listChangeNames(root: ProjectRoot, includeArchive = false): stri
 
 export function changeDir(root: ProjectRoot, changeName: string): string {
   if (changeName.includes("..") || changeName.startsWith("/")) {
-    throw new Error(`Nombre de change inválido: ${changeName}`);
+    throw new Error(`Invalid change name: ${changeName}`);
   }
 
   const dir = changeName.startsWith("archive/")
@@ -67,7 +67,7 @@ export function changeDir(root: ProjectRoot, changeName: string): string {
     : join(root.changesDir, changeName);
 
   if (!existsSync(dir) || !statSync(dir).isDirectory()) {
-    throw new Error(`Change no encontrado: ${changeName}`);
+    throw new Error(`Change not found: ${changeName}`);
   }
 
   return dir;

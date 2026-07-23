@@ -67,7 +67,7 @@ function uiDir(): string {
   for (const c of candidates) {
     if (existsSync(join(c, "index.html"))) return c;
   }
-  throw new Error("No se encontró la UI (dist/ui o src/ui). ¿Corriste npm run build?");
+  throw new Error("UI not found (dist/ui or src/ui). Run: npm run build");
 }
 
 function serveStatic(res: ServerResponse, urlPath: string) {
@@ -187,7 +187,7 @@ export function startServer(opts: ServerOptions) {
 
       if (method === "POST" && pathname === "/api/changes") {
         const body = await readJson<{ name?: string; description?: string }>(req);
-        if (!body.name?.trim()) return sendJson(res, 400, { error: "name requerido" });
+        if (!body.name?.trim()) return sendJson(res, 400, { error: "name is required" });
         const created = await createChange(root, body.name, { description: body.description });
         broadcast("reload", {
           type: "change",
@@ -223,7 +223,7 @@ export function startServer(opts: ServerOptions) {
         const name = decodeURIComponent(archiveMatch[1]);
         const body = await readJson<{ skipSpecs?: boolean; confirm?: boolean }>(req);
         if (!body.confirm) {
-          return sendJson(res, 400, { error: "confirm: true requerido (no hay undo mágico)" });
+          return sendJson(res, 400, { error: "confirm: true is required (no magic undo)" });
         }
         const result = await archiveChange(root, name, { skipSpecs: body.skipSpecs });
         broadcast("reload", {
@@ -270,7 +270,7 @@ export function startServer(opts: ServerOptions) {
         }
 
         if (typeof body.content !== "string") {
-          return sendJson(res, 400, { error: "content (string) requerido" });
+          return sendJson(res, 400, { error: "content (string) is required" });
         }
         const written = writeArtifact(root, name, artifact, body.content);
         broadcast("reload", {
@@ -307,12 +307,12 @@ export function startServer(opts: ServerOptions) {
         const name = decodeURIComponent(toggleMatch[1]);
         if (name.startsWith("archive/")) {
           return sendJson(res, 400, {
-            error: "Change archivado es read-only (como los commits de prod un viernes).",
+            error: "Archived changes are read-only",
           });
         }
         const body = await readJson<{ taskId?: string; done?: boolean }>(req);
         if (!body.taskId) {
-          return sendJson(res, 400, { error: "taskId requerido" });
+          return sendJson(res, 400, { error: "taskId is required" });
         }
         const path = tasksPathFor(root, name);
         const { parsed, task } = toggleTaskFile(path, body.taskId, body.done);

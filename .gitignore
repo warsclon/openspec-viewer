@@ -1,4 +1,5 @@
 node_modules/
 dist/
+.openspec-viewer/
 *.log
 .DS_Store

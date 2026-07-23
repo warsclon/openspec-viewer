@@ -16,10 +16,10 @@ export type ArtifactName = "proposal" | "design" | "tasks";
 
 export function assertActiveChange(changeName: string): void {
   if (changeName.includes("..") || changeName.startsWith("/")) {
-    throw new Error(`Nombre de change inválido: ${changeName}`);
+    throw new Error(`Invalid change name: ${changeName}`);
   }
   if (changeName.startsWith("archive/")) {
-    throw new Error("Change archivado es read-only");
+    throw new Error("Archived changes are read-only");
   }
 }
 
@@ -37,7 +37,7 @@ export function writeArtifact(
   artifact: ArtifactName,
   content: string,
 ): { path: string; content: string } {
-  if (!ARTIFACTS.has(artifact)) throw new Error(`Artifact inválido: ${artifact}`);
+  if (!ARTIFACTS.has(artifact)) throw new Error(`Invalid artifact: ${artifact}`);
   const path = artifactPath(root, changeName, artifact);
   const body = content.endsWith("\n") ? content : `${content}\n`;
   writeFileSync(path, body, "utf8");
@@ -103,12 +103,12 @@ export async function createChange(
   const changeName = name.trim();
   if (!CHANGE_NAME_RE.test(changeName)) {
     throw new Error(
-      "Nombre inválido. Usa kebab-case: add-dark-mode (minúsculas, guiones, sin empezar por número).",
+      "Invalid name. Use kebab-case: add-dark-mode (lowercase, hyphens, must not start with a number).",
     );
   }
   const dest = join(root.changesDir, changeName);
   if (existsSync(dest)) {
-    throw new Error(`Ya existe el change: ${changeName}`);
+    throw new Error(`Change already exists: ${changeName}`);
   }
 
   const args = ["new", "change", changeName, "--json"];
@@ -134,7 +134,7 @@ export async function createChange(
         stdout: result.stderr || result.stdout || "scaffolded without openspec CLI",
       };
     }
-    throw new Error(result.stderr || result.stdout || `openspec new change falló (${result.code})`);
+    throw new Error(result.stderr || result.stdout || `openspec new change failed (${result.code})`);
   }
 
   return { name: changeName, path: dest, stdout: result.stdout };
@@ -147,14 +147,14 @@ export async function archiveChange(
 ): Promise<{ stdout: string; stderr: string }> {
   assertActiveChange(changeName);
   const dir = changeDir(root, changeName);
-  if (!existsSync(dir)) throw new Error(`Change no encontrado: ${changeName}`);
+  if (!existsSync(dir)) throw new Error(`Change not found: ${changeName}`);
 
   const args = ["archive", changeName, "-y", "--json"];
   if (opts?.skipSpecs) args.push("--skip-specs");
 
   const result = await runCommand("openspec", args, root.projectDir);
   if (result.code !== 0) {
-    throw new Error(result.stderr || result.stdout || `openspec archive falló (${result.code})`);
+    throw new Error(result.stderr || result.stdout || `openspec archive failed (${result.code})`);
   }
   return { stdout: result.stdout, stderr: result.stderr };
 }

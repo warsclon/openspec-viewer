@@ -936,9 +936,14 @@ html[data-theme="light"] .toast {
 }
 
 .btn.ghost {
-  background: transparent;
+  background: var(--bg-soft);
   color: var(--text);
   border-color: var(--border);
+}
+
+.btn.ghost:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-soft));
 }
 
 .btn.danger {
@@ -947,8 +952,13 @@ html[data-theme="light"] .toast {
   color: #fff;
 }
 
-html[data-theme="light"] .btn {
+html[data-theme="light"] .btn:not(.ghost) {
   color: #fff;
+}
+
+html[data-theme="light"] .btn.ghost {
+  color: var(--text);
+  background: var(--bg-soft);
 }
 
 .dialog-panel {
@@ -1392,7 +1402,7 @@ html[data-theme="light"] .btn {
   line-height: 1.4;
 }
 
-/* Next / Ahora */
+/* Next / Now */
 .next-hero {
   display: flex;
   justify-content: space-between;

@@ -1,27 +1,39 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
-import { resolve } from "node:path";
+import { readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { findOpenspecRoot } from "./openspec/discover.js";
 import { startServer } from "./server.js";
 
-function printHelp() {
-  console.log(`openspec-viewer — UI web local para OpenSpec
+function packageVersion(): string {
+  try {
+    const pkgPath = join(dirname(fileURLToPath(import.meta.url)), "..", "package.json");
+    const pkg = JSON.parse(readFileSync(pkgPath, "utf8")) as { version?: string };
+    return pkg.version ?? "0.0.0";
+  } catch {
+    return "0.0.0";
+  }
+}
 
-Uso:
+function printHelp() {
+  console.log(`openspec-viewer — local web UI for OpenSpec
+
+Usage:
   openspec-viewer [options] [path]
 
-Opciones:
-  -p, --port <n>     Puerto (default: 4321)
+Options:
+  -p, --port <n>     Port (default: 4321)
   --host <host>      Host (default: 127.0.0.1)
-  --path <dir>       Proyecto a escanear (default: cwd)
-  --no-archive       Ocultar changes archivados (por defecto se muestran)
-  --no-open          No abrir el navegador
-  -h, --help         Esta ayuda
-  -V, --version      Versión
+  --path <dir>       Project to scan (default: cwd)
+  --no-archive       Hide archived changes (shown by default)
+  --no-open          Do not open the browser
+  -h, --help         Show help
+  -V, --version      Show version
 
-Ejemplos:
+Examples:
   openspec-viewer
-  openspec-viewer ../mi-proyecto
+  openspec-viewer ../my-project
   openspec-viewer --port 5173 --path ./apps/api
 `);
 }
@@ -49,7 +61,7 @@ function parseArgs(argv: string[]) {
     else if (a === "--host") opts.host = argv[++i] ?? opts.host;
     else if (a === "--path") opts.path = resolve(argv[++i] ?? ".");
     else if (a.startsWith("-")) {
-      throw new Error(`Opción desconocida: ${a}`);
+      throw new Error(`Unknown option: ${a}`);
     } else {
       rest.push(a);
     }
@@ -57,7 +69,7 @@ function parseArgs(argv: string[]) {
 
   if (rest[0]) opts.path = resolve(rest[0]);
   if (!Number.isFinite(opts.port) || opts.port <= 0) {
-    throw new Error(`Puerto inválido: ${opts.port}`);
+    throw new Error(`Invalid port: ${opts.port}`);
   }
   return opts;
 }
@@ -76,7 +88,7 @@ async function main() {
     return;
   }
   if (opts.version) {
-    console.log("0.5.0");
+    console.log(packageVersion());
     return;
   }
 
@@ -90,11 +102,11 @@ async function main() {
 
   console.log("");
   console.log("  OpenSpec Viewer");
-  console.log(`  proyecto: ${root.projectDir}`);
+  console.log(`  project:  ${root.projectDir}`);
   console.log(`  openspec: ${root.openspecDir}`);
   console.log(`  UI:       ${url}`);
   console.log("");
-  console.log("  Ctrl+C para salir · live reload on · ⌘K busca · #/change/… deep links");
+  console.log("  Ctrl+C to quit · live reload on · ⌘K/Ctrl+K search · #/change/… deep links");
   console.log("");
 
   if (opts.open) {

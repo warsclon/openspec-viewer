@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -26,42 +26,42 @@
             <p id="project-path" class="muted">…</p>
             <p class="live-line">
               <span id="live-dot" class="live-dot" title="Live reload"></span>
-              <span id="live-label" class="muted">conectando…</span>
+              <span id="live-label" class="muted">connecting…</span>
             </p>
           </div>
         </header>
 
-        <button type="button" class="search-launch" id="search-launch" title="Buscar (⌘K)">
-          <span>Buscar changes, tasks, specs…</span>
+        <button type="button" class="search-launch" id="search-launch" title="Search (⌘K)">
+          <span>Search changes, tasks, specs…</span>
           <kbd>⌘K</kbd>
         </button>
 
         <div id="stats" class="stats"></div>
 
         <div class="sidebar-section">
-          <div class="section-label">Filtro</div>
+          <div class="section-label">Filter</div>
           <div class="chip-row" id="filter-row">
-            <button type="button" class="chip active" data-filter="all">Todos</button>
-            <button type="button" class="chip" data-filter="active">Activos</button>
-            <button type="button" class="chip" data-filter="archived">Archivados</button>
+            <button type="button" class="chip active" data-filter="all">All</button>
+            <button type="button" class="chip" data-filter="active">Active</button>
+            <button type="button" class="chip" data-filter="archived">Archived</button>
           </div>
         </div>
 
         <div class="sidebar-section grow">
           <div class="section-label-row">
             <div class="section-label">Changes</div>
-            <button type="button" class="chip" id="btn-new-change" title="Crear change">+ Nuevo</button>
+            <button type="button" class="chip" id="btn-new-change" title="Create change">+ New</button>
           </div>
           <div id="change-list" class="change-list"></div>
         </div>
 
         <div class="sidebar-section" id="main-specs-wrap">
-          <div class="section-label">Specs main</div>
+          <div class="section-label">Main specs</div>
           <div id="main-specs" class="spec-chips"></div>
         </div>
 
         <footer class="sidebar-foot muted">
-          Archivados = read-only · Activos escriben <code>tasks.md</code>
+          Archived = read-only · Active changes write to <code>tasks.md</code>
         </footer>
       </aside>
 
@@ -69,25 +69,25 @@
         <header class="topbar">
           <div class="topbar-left">
             <div class="view-switch" id="view-switch">
-              <button type="button" class="view-btn active" data-view="next">Ahora</button>
-              <button type="button" class="view-btn" data-view="graph">Grafo</button>
+              <button type="button" class="view-btn active" data-view="next">Now</button>
+              <button type="button" class="view-btn" data-view="graph">Graph</button>
               <button type="button" class="view-btn" data-view="timeline">Timeline</button>
               <button type="button" class="view-btn" data-view="board">Board</button>
-              <button type="button" class="view-btn" data-view="detail">Detalle</button>
+              <button type="button" class="view-btn" data-view="detail">Detail</button>
             </div>
-            <p id="view-hint" class="muted view-hint">Evolución del proyecto por fecha de archive</p>
+            <p id="view-hint" class="muted view-hint">Project evolution by archive date</p>
           </div>
-          <div class="prefs" aria-label="Preferencias de visualización">
-            <div class="pref-group" title="Tema">
-              <button type="button" class="icon-btn" id="theme-toggle" aria-label="Cambiar tema">
+          <div class="prefs" aria-label="Display preferences">
+            <div class="pref-group" title="Theme">
+              <button type="button" class="icon-btn" id="theme-toggle" aria-label="Change theme">
                 <span class="theme-icon theme-icon-dark" aria-hidden="true">☾</span>
                 <span class="theme-icon theme-icon-light" aria-hidden="true">☀</span>
               </button>
             </div>
-            <div class="pref-group font-group" title="Tamaño de fuente">
-              <button type="button" class="icon-btn" id="font-dec" aria-label="Reducir fuente">A−</button>
+            <div class="pref-group font-group" title="Font size">
+              <button type="button" class="icon-btn" id="font-dec" aria-label="Decrease font size">A−</button>
               <span id="font-label" class="font-label">M</span>
-              <button type="button" class="icon-btn" id="font-inc" aria-label="Aumentar fuente">A+</button>
+              <button type="button" class="icon-btn" id="font-inc" aria-label="Increase font size">A+</button>
             </div>
           </div>
         </header>
@@ -99,8 +99,8 @@
 
         <section id="view-detail" class="view hidden">
           <div id="empty-state" class="empty">
-            <h2>Elige un change</h2>
-            <p class="muted">O mira Timeline/Board si la lista activa está más vacía que backlog de viernes.</p>
+            <h2>Choose a change</h2>
+            <p class="muted">Or open Timeline/Board when the active list is emptier than a Friday backlog.</p>
           </div>
 
           <div id="detail" class="detail hidden">
@@ -118,7 +118,7 @@
                   </div>
                   <div class="progress-bar"><div id="progress-fill"></div></div>
                 </div>
-                <button type="button" class="btn danger ghost hidden" id="btn-archive">Archivar…</button>
+                <button type="button" class="btn danger ghost hidden" id="btn-archive">Archive…</button>
               </div>
             </header>
 
@@ -128,7 +128,7 @@
               <button type="button" data-tab="proposal" class="tab">Proposal</button>
               <button type="button" data-tab="design" class="tab">Design</button>
               <button type="button" data-tab="specs" class="tab">Specs</button>
-              <button type="button" data-tab="notes" class="tab">Notas</button>
+              <button type="button" data-tab="notes" class="tab">Notes</button>
             </nav>
 
             <section id="panel-tasks" class="panel"></section>
@@ -142,23 +142,23 @@
       </main>
     </div>
 
-    <div id="search-modal" class="search-modal hidden" role="dialog" aria-modal="true" aria-label="Búsqueda global">
+    <div id="search-modal" class="search-modal hidden" role="dialog" aria-modal="true" aria-label="Global search">
       <div class="search-panel">
         <div class="search-input-row">
-          <input id="search-input" type="search" placeholder="Buscar change, task, proposal, design, spec…" autocomplete="off" />
+          <input id="search-input" type="search" placeholder="Search change, task, proposal, design, spec…" autocomplete="off" />
           <kbd>esc</kbd>
         </div>
         <div id="search-results" class="search-results"></div>
-        <p class="search-foot muted">↵ abrir · ↑↓ navegar · esc cerrar</p>
+        <p class="search-foot muted">↵ open · ↑↓ navigate · esc close</p>
       </div>
     </div>
 
     <div id="dialog-modal" class="search-modal hidden" role="dialog" aria-modal="true">
       <div class="search-panel dialog-panel">
-        <h3 id="dialog-title">Confirmar</h3>
+        <h3 id="dialog-title">Confirm</h3>
         <div id="dialog-body"></div>
         <div class="dialog-actions">
-          <button type="button" class="btn ghost" id="dialog-cancel">Cancelar</button>
+          <button type="button" class="btn ghost" id="dialog-cancel">Cancel</button>
           <button type="button" class="btn" id="dialog-ok">OK</button>
         </div>
       </div>

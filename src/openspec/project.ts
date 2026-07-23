@@ -287,7 +287,7 @@ export function getChangeDetail(root: ProjectRoot, name: string): ChangeDetail {
 export function tasksPathFor(root: ProjectRoot, changeName: string): string {
   const path = join(changeDir(root, changeName), "tasks.md");
   if (!existsSync(path)) {
-    throw new Error(`tasks.md no existe para ${changeName}`);
+    throw new Error(`tasks.md does not exist for ${changeName}`);
   }
   return path;
 }
@@ -358,7 +358,7 @@ export function listNextUp(changes: ChangeSummary[]): NextUpItem[] {
     .sort((a, b) => {
       const pa = a.change.progress;
       const pb = b.change.progress;
-      if (pa !== pb) return pb - pa; // más avanzados primero (momentum)
+      if (pa !== pb) return pb - pa; // most advanced first (momentum)
       return a.change.displayName.localeCompare(b.change.displayName);
     });
 }

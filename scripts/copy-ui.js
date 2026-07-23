@@ -1,4 +1,4 @@
-import { cpSync, mkdirSync, existsSync } from "node:fs";
+import { chmodSync, cpSync, mkdirSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -13,4 +13,5 @@ if (!existsSync(src)) {
 
 mkdirSync(dest, { recursive: true });
 cpSync(src, dest, { recursive: true });
+chmodSync(join(root, "dist", "cli.js"), 0o755);
 console.log("Copied UI → dist/ui");
