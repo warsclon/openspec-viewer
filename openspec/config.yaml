@@ -1,0 +1,20 @@
+schema: spec-driven
+
+context: |
+  openspec-viewer is a TypeScript ESM CLI for Node.js 20+ with a dependency-free
+  runtime and a static HTML/CSS/JavaScript browser UI. It discovers and manages
+  local OpenSpec projects through a localhost HTTP and SSE API.
+  Runtime code uses Node.js built-ins. Development uses TypeScript, Vitest, and
+  tsx. User-facing strings and public documentation are written in English.
+  The public repository is warsclon/openspec-viewer and uses conventional-style
+  commit messages. CI must pass on Node.js 20 and 22.
+
+rules:
+  proposal:
+    - State explicit non-goals for changes that span product and repository operations.
+    - Identify externally managed GitHub or npm settings in Impact.
+  specs:
+    - Prefer public CLI, HTTP, browser, package, and repository behaviors as test seams.
+  tasks:
+    - Keep each task small enough to complete and verify in one agent session.
+    - Include explicit validation tasks for package installation, UI behavior, and GitHub configuration.
