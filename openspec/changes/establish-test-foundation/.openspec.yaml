@@ -1,0 +1,5 @@
+schema: spec-driven
+created: 2026-07-24
+goal: Make automated verification the first implementation priority by covering
+  the domain, real HTTP API, installed CLI, browser workflow, and package
+  boundaries with deterministic tests and enforceable CI checks.

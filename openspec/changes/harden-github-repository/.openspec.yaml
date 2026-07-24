@@ -1,0 +1,5 @@
+schema: spec-driven
+created: 2026-07-23
+goal: Configure GitHub repository governance, dependency automation, secret
+  protection, code scanning, and verifiable security controls for the public
+  repository.
