@@ -26,6 +26,35 @@ describe("parseTasksMarkdown", () => {
     expect(parsed.tasks[1]).toMatchObject({ id: "1.2", done: true });
     expect(parsed.sections[1].title).toBe("2. Build");
   });
+
+  it("ignores malformed headings and assigns ids to unnumbered tasks", () => {
+    const parsed = parseTasksMarkdown(`##\n
+### 2. Valid section
+
+- [ ] Task without an id
+- [?] Not a supported checkbox
+`);
+
+    expect(parsed.sections).toHaveLength(1);
+    expect(parsed.sections[0].title).toBe("2. Valid section");
+    expect(parsed.tasks).toEqual([
+      expect.objectContaining({
+        id: "task-1",
+        text: "Task without an id",
+        done: false,
+      }),
+    ]);
+  });
+
+  it("preserves duplicate explicit ids for callers to diagnose", () => {
+    const parsed = parseTasksMarkdown(`## 1. Work
+
+- [ ] 1.1 First task
+- [x] 1.1 Duplicate task
+`);
+
+    expect(parsed.tasks.map((task) => task.id)).toEqual(["1.1", "1.1"]);
+  });
 });
 
 describe("serializeTasksMarkdown", () => {
@@ -81,5 +110,61 @@ describe("mutateTasks", () => {
     });
     expect(sections[0].title).toBe("1. Phase");
     expect(sections[0].tasks[0].text).toBe("do thing");
+  });
+
+  it("honors explicit completion and leaves boundary moves unchanged", () => {
+    const sections = [
+      {
+        title: "1. Work",
+        tasks: [
+          { id: "1.1", text: "first", done: false },
+          { id: "1.2", text: "second", done: true },
+        ],
+      },
+    ];
+
+    const completed = mutateTasks(sections, {
+      type: "update",
+      taskId: "1.1",
+      done: true,
+    });
+    expect(completed[0].tasks[0].done).toBe(true);
+    const unchangedTop = mutateTasks(completed, {
+      type: "move",
+      taskId: "1.1",
+      direction: "up",
+    });
+    const unchangedBottom = mutateTasks(unchangedTop, {
+      type: "move",
+      taskId: "1.2",
+      direction: "down",
+    });
+    expect(unchangedBottom[0].tasks.map((task) => task.id)).toEqual(["1.1", "1.2"]);
+  });
+
+  it("validates section and task operations", () => {
+    const sections = [
+      {
+        title: "1. Work",
+        tasks: [{ id: "1.1", text: "first", done: false }],
+      },
+    ];
+
+    expect(() =>
+      mutateTasks(sections, { type: "add", sectionIndex: 2, text: "missing" }),
+    ).toThrow("Section not found");
+    expect(() =>
+      mutateTasks(sections, { type: "delete", taskId: "9.9" }),
+    ).toThrow("Task not found: 9.9");
+
+    const renamed = mutateTasks(sections, {
+      type: "rename-section",
+      sectionIndex: 0,
+      title: "1. Renamed",
+    });
+    expect(renamed[0].title).toBe("1. Renamed");
+    expect(
+      mutateTasks(renamed, { type: "delete-section", sectionIndex: 0 }),
+    ).toEqual([{ title: "Tasks", tasks: [] }]);
   });
 });

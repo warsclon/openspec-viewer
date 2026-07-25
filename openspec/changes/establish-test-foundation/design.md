@@ -89,6 +89,58 @@ development UI served by the real server. Subprocess boundaries such as
 OpenSpec archive and OS browser launch may use injected narrow command runners
 so tests do not open applications or depend on globally installed tools.
 
+Create and archive commands run against an isolated temporary copy of the
+selected OpenSpec project. Lifecycle copies reject symbolic links and
+unsupported filesystem entries rather than allowing a subprocess to follow
+them outside the selected project.
+
+A successful create publishes only the completed change directory. Publication
+first reserves the destination directory atomically, so another writer cannot
+be replaced between an existence check and the final rename. On Windows, where
+renaming over the process-owned empty reservation is not supported, publication
+uses the platform's direct no-replace directory rename behavior.
+
+A successful archive is published only when a content fingerprint proves that
+the live project has not changed since the temporary copy was created. The
+publisher computes the path delta between the original and command-result
+trees, stages replacement files on the project filesystem, and applies only
+that delta. Fingerprints include entry type, file content, and relevant
+permission bits. New files use no-clobber hard links. Replacements and removals
+atomically move the current live file to a path-scoped backup, validate the
+captured file, and use no-clobber publication for the replacement. The
+publisher revalidates the result and the backups before commit. It never clears
+and recopies the entire live OpenSpec tree, so unrelated concurrent data is not
+overwritten and the watched root directory remains stable.
+
+Archive staging under `.openspec-viewer/lifecycle/` verifies directory
+identity and realpath containment before writing or cleanup. Symlinked local
+state components are rejected. The local ignore file is retained and repaired
+when necessary so that recovery material and notes remain ignored even when
+another local operation creates data during publication. Temporary publish
+directories are atomically moved to an identity-checked quarantine name before
+recursive deletion.
+
+The lifecycle distinguishes publication commit from cleanup. A cleanup error
+after the live result is committed returns the successful mutation together
+with an English `cleanupWarning`; it does not report the mutation as unapplied
+or invite an unsafe retry. If publication and cleanup both fail before commit,
+the publication error remains primary and carries the cleanup failure as
+diagnostic context.
+
+Failed commands, failed fallback scaffolds, preparation errors, and detected
+concurrent-edit conflicts restore paths changed by the transaction and remove
+their temporary workspaces. If an external writer makes exact rollback
+impossible, its data is preserved and recovery files remain only in ignored
+local viewer state rather than as an unignored repository-root copy.
+
+File-watch mapping, create/update/rename notifications, debounce, ignored local
+notes, error tolerance, and idempotent close are tested through the injected
+`WatchFactory` boundary with fake timers. The suite does not use a timing-based
+`fs.watch` smoke test: delivery timing varies by operating system and retaining
+one would violate the no-fixed-sleeps and no-silent-retries reliability
+requirements. Real server and SSE tests verify watcher ownership and shutdown
+without treating best-effort operating-system timing as a deterministic gate.
+
 Tests assert observable results: response status and body, resulting file
 content, emitted event, visible UI state, CLI output, exit status, and package
 contents. They do not assert private helper calls or exact DOM structure.

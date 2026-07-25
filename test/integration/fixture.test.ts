@@ -1,7 +1,7 @@
 import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createTestProject } from "./helpers/fixture.js";
+import { createTestProject } from "../helpers/fixture.js";
 
 describe("test project fixture", () => {
   it("creates independent copies and removes each temporary project", () => {

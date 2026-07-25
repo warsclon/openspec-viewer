@@ -40,27 +40,32 @@
 
 ## 3. Domain and Filesystem Coverage
 
-- [ ] 3.1 Expand discovery tests for ancestor lookup, direct OpenSpec paths,
+- [x] 3.1 Expand discovery tests for ancestor lookup, direct OpenSpec paths,
   missing projects, active/archive listing, invalid names, and deterministic
   ordering
-- [ ] 3.2 Expand task tests for malformed headings, duplicate or missing IDs,
+- [x] 3.2 Expand task tests for malformed headings, duplicate or missing IDs,
   section operations, boundary moves, explicit completion state, file writes,
   and validation errors
-- [ ] 3.3 Expand project tests for empty, partial, complete, and archived changes,
+- [x] 3.3 Expand project tests for empty, partial, complete, and archived changes,
   missing optional artifacts, overview counts, details, graph edges, and next-up
   ordering
-- [ ] 3.4 Expand search tests across task, proposal, design, main spec, delta
-  spec, multi-term, empty, case-insensitive, limit, and snippet behavior
-- [ ] 3.5 Expand spec-diff tests for renamed and unknown sections, multiple
+- [x] 3.4 Expand search tests across task, proposal, design, main spec, delta
+  spec, separated multi-term, empty, case-insensitive, limit, and snippet
+  behavior
+- [x] 3.5 Expand spec-diff tests for renamed and unknown sections, multiple
   requirements, absent scenarios, previews, and change-level spec discovery
-- [ ] 3.6 Add artifact mutation tests for active proposal, design, raw tasks,
-  structured tasks, invalid content, missing changes, and archived rejection
-- [ ] 3.7 Add notes tests for directory creation, `.gitignore` preservation,
-  read/write behavior, invalid change names, and isolation from OpenSpec
-  artifacts
-- [ ] 3.8 Add create and archive tests with a narrow fake OpenSpec process,
-  verifying arguments, output, errors, resulting paths, and no partial writes
-- [ ] 3.9 Add watcher tests for relevant create, update, and rename events,
+- [x] 3.6 Add artifact mutation tests for active proposal, design, raw tasks,
+  structured tasks, stable invalid-content errors, missing changes, and
+  archived rejection
+- [x] 3.7 Add notes tests for directory creation, `.gitignore` preservation,
+  read/write behavior, rejected traversal-shaped change names, and isolation
+  from OpenSpec artifacts
+- [x] 3.8 Add create and archive tests with a narrow fake OpenSpec process,
+  verifying arguments, output, errors, resulting paths, symlink rejection,
+  contained local recovery state, deterministic partial-publication rollback,
+  cross-platform no-clobber publication, post-commit cleanup warnings,
+  conflict-aware publication, workspace cleanup, and no partial writes
+- [x] 3.9 Add watcher tests for relevant create, update, and rename events,
   debounce behavior, ignored local notes, and reliable close
 
 ## 4. Real HTTP and SSE Integration

@@ -28,6 +28,10 @@ required checks exercise the behavior users depend on.
 - Expand Vitest coverage across discovery, project parsing, search, task and
   artifact mutation, notes, archive behavior, file watching, and failure
   integrity.
+- Make create and archive lifecycle publication isolated, conflict-aware, and
+  safe for untrusted local project trees.
+- Reject invalid artifact content, traversal-shaped note names, and symbolic
+  links at lifecycle-copy boundaries with stable validation errors.
 - Test every public HTTP read and mutation family through real requests,
   including validation errors, archived read-only enforcement, persistence,
   SSE, and shutdown.
@@ -48,6 +52,9 @@ required checks exercise the behavior users depend on.
 - `verification-foundation`: Deterministic automated evidence for the domain,
   filesystem, HTTP, CLI, package, browser, and CI contracts of
   `openspec-viewer`.
+- `local-project-integrity`: Conflict-aware lifecycle publication and stable
+  validation that prevent partial writes, concurrent-edit loss, and symlink
+  escape during create and archive operations.
 
 ### Modified Capabilities
 
@@ -59,9 +66,10 @@ capability specification.
 - Adds development-only coverage and browser-test dependencies.
 - Changes package scripts, Vitest configuration, GitHub Actions, test fixtures,
   and contributor documentation.
-- May require small, behavior-preserving refactors that make the server,
-  subprocess invocation, browser launch, and temporary resources controllable
-  from tests.
+- Refactors server, subprocess invocation, browser launch, and temporary
+  resources so their lifecycle is controllable from tests.
+- Tightens invalid-input behavior for non-string artifacts, traversal-shaped
+  note names, lifecycle symlinks, and concurrent create or archive conflicts.
 - Creates stable CI check names that `harden-github-repository` can require.
 - Becomes a prerequisite for `prepare-public-launch`; launch-specific demo and
   visual tests extend this foundation instead of duplicating it.
@@ -71,9 +79,11 @@ capability specification.
 
 - Replacing TDD with after-the-fact coverage work.
 - Treating a coverage percentage as proof of correctness or security.
-- Fixing the known CSRF, non-loopback exposure, unsafe Markdown-link, request
-  size, or symlink findings; their regression tests must be added with the
-  corresponding security fixes.
+- Fixing the remaining known CSRF, non-loopback exposure, unsafe Markdown-link,
+  request-size, or general filesystem-containment findings; their regression
+  tests must be added with the corresponding security fixes. This change only
+  covers the lifecycle-copy and note-name boundaries introduced or exercised
+  by this foundation.
 - Adding pixel-perfect screenshot tests.
 - Testing every browser and operating-system combination in the first phase.
 - Publishing an npm package, release, hosted demo, or GitHub Pages site.
