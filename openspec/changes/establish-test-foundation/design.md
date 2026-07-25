@@ -82,6 +82,14 @@ watchers, and remove temporary directories in teardown.
 If production code needs a small lifecycle refactor to support this, the change
 must preserve CLI behavior and begin with a failing public-seam test.
 
+The HTTP boundary validates that mutation bodies are JSON objects and checks
+action-specific field types before calling domain functions. Invalid encoding,
+JSON, or typed input returns `400`; missing routes, changes, or tasks return
+`404`; existing-change and archived-read-only conflicts return `409`; and local
+operation or OpenSpec subprocess failures return `500`. Note writes emit an
+explicit SSE reload because `.openspec-viewer/` is intentionally outside the
+OpenSpec filesystem watcher.
+
 ### 4. Prefer real boundaries and narrow fakes
 
 HTTP tests use real requests and real files. Browser tests use the built or

@@ -67,6 +67,29 @@ SSE delivery, and clean shutdown.
 - **THEN** the server, watchers, open event streams, and temporary resources are
   closed without keeping the test process alive
 
+### Requirement: HTTP failures use stable JSON status classes
+
+The local HTTP API SHALL validate the JSON root and action-specific fields
+before mutation. It SHALL return JSON errors with `400` for malformed encoding,
+invalid JSON, invalid field types, or missing required input; `404` for unknown
+routes, changes, or tasks; `409` for existing-change and archived-read-only
+conflicts; and `500` when a local operation or OpenSpec subprocess fails.
+Rejected requests SHALL leave their target files unchanged.
+
+#### Scenario: A request has invalid typed input
+
+- **WHEN** a mutation body is null, lacks a required field, or supplies a field
+  with an unsupported type
+- **THEN** the server returns `400` with an English JSON error and does not
+  mutate project data
+
+#### Scenario: A request conflicts with project state
+
+- **WHEN** a client creates an existing change or attempts to mutate an archived
+  OpenSpec artifact
+- **THEN** the server returns `409` and preserves the existing files byte for
+  byte
+
 ### Requirement: The installed CLI and package are verified
 
 The suite SHALL build a package tarball, inspect its public contents, install it
