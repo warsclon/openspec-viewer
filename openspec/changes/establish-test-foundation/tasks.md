@@ -14,10 +14,10 @@
   weakening the final required thresholds
 - [x] 1.7 Add coverage output, browser output, package tarballs, and transient
   test projects to `.gitignore` while retaining any committed fictional fixture
-- [ ] 1.8 Test Vitest 4.1.10 with the matching `@vitest/coverage-v8` major on
+- [x] 1.8 Test Vitest 4.1.10 with the matching `@vitest/coverage-v8` major on
   Node.js 20 and 22, record its minimum development-runtime impact, and either
   adopt the matched pair or retain Vitest 3 with the blocker documented
-- [ ] 1.9 Coordinate the chosen toolchain with Dependabot PR #5 and close that
+- [x] 1.9 Coordinate the chosen toolchain with Dependabot PR #5 and close that
   PR as superseded or compatibility-blocked only after the decision is verified
 
 ## 2. Deterministic Fixture and Harnesses

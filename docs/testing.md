@@ -77,7 +77,8 @@ temporary thresholds.
 Vitest 4.1.10 is evaluated together with `@vitest/coverage-v8` 4.1.10. The
 transitive Vite 8.1.5 development tool requires Node.js 20.19 or newer, or
 Node.js 22.12 or newer. This does not add a published runtime dependency. The
-upgrade is accepted only after the Node.js 20 and 22 GitHub checks pass.
+upgrade was accepted after pull request #8 passed the Node.js 20 and 22 GitHub
+checks on 2026-07-25.
 
 ## Failure diagnosis
 

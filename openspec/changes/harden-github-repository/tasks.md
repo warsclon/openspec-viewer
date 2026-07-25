@@ -41,7 +41,7 @@
   ignore incompatible `@types/node` majors until that matrix changes
 - [ ] 2.11 Close PR #4 with its observed TypeScript 7 typecheck failure and
   ignore TypeScript majors until an explicit compiler-migration change exists
-- [ ] 2.12 Resolve PR #5 from `establish-test-foundation`: adopt Vitest 4 only
+- [x] 2.12 Resolve PR #5 from `establish-test-foundation`: adopt Vitest 4 only
   with the matching coverage provider and green Node.js 20/22 checks, then close
   the original PR as superseded; otherwise close it with the compatibility
   blocker and retain the matched Vitest 3 toolchain
