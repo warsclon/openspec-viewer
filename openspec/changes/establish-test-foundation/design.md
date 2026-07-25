@@ -95,8 +95,23 @@ contents. They do not assert private helper calls or exact DOM structure.
 
 ### 5. Add coverage as a guardrail, not the objective
 
-`@vitest/coverage-v8` will measure TypeScript Node sources. The completed
-foundation will enforce at least:
+Vitest and `@vitest/coverage-v8` will always use the same major. Dependabot PR
+#5 proposes Vitest 4.1.10, but it will not be merged independently. The
+foundation will test the matched Vitest 4 and coverage-v8 pair against the
+current source, Node.js 20, and Node.js 22. It will be adopted only if:
+
+- Unit and integration behavior remains green.
+- Coverage semantics and thresholds remain stable.
+- The minimum supported development runtime is documented and compatible with
+  the repository's Node.js policy.
+- The package remains dependency-free at runtime.
+
+If those conditions fail, the foundation retains the matched Vitest 3 pair and
+records the blocker. This is a compatibility decision, not an automatic
+security upgrade.
+
+The chosen `@vitest/coverage-v8` version will measure TypeScript Node sources.
+The completed foundation will enforce at least:
 
 - 80 percent statements and lines.
 - 80 percent functions.
@@ -140,6 +155,12 @@ The exact displayed GitHub check names will be verified before
 `harden-github-repository` configures the ruleset. Browser diagnostics are
 uploaded only on failure and contain fictional fixture data.
 
+When these jobs replace the current CI workflow, they will also supersede
+Dependabot PRs #1 and #2 by using the reviewed current v7 commits for
+`actions/checkout` and `actions/setup-node`, pinned to full SHAs with version
+comments. Mutable major tags are not accepted even when the underlying upgrade
+is desirable.
+
 ### 8. Add security tests with their fixes
 
 The foundation supplies harnesses for origin, content type, body size, URL
@@ -181,12 +202,14 @@ behavior as the expected contract.
 
 ## Rollout Order
 
-1. Add the test strategy, coverage tooling, fixture, and lifecycle harnesses.
+1. Add the test strategy, decide the matched Vitest/coverage version, and add
+   the coverage tooling, fixture, and lifecycle harnesses.
 2. Fill domain and filesystem gaps.
 3. Add real HTTP and SSE integration tests.
 4. Add installed CLI and package smoke tests.
 5. Add the deterministic browser suite.
-6. Split CI into stable checks and enforce coverage thresholds.
+6. Split CI into stable checks, pin the reviewed v7 Actions digests, and enforce
+   coverage thresholds.
 7. Run repeatability and clean-environment validation.
 8. Make this foundation a prerequisite for GitHub hardening and public launch.
 

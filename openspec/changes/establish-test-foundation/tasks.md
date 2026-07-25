@@ -4,33 +4,38 @@
   modules, package scripts, CI jobs, and missing public seams
 - [x] 1.2 Run the current unit suite, typecheck, and build and record the
   2026-07-24 baseline of 4 files and 11 passing tests
-- [ ] 1.3 Add `docs/testing.md` with the test layers, commands, fixture policy,
+- [x] 1.3 Add `docs/testing.md` with the test layers, commands, fixture policy,
   ownership, failure diagnostics, and TDD red/green expectations
 - [ ] 1.4 Add `test:unit`, `test:integration`, `test:coverage`, `test:browser`,
   and `test:package` scripts with non-overlapping responsibilities
-- [ ] 1.5 Add `@vitest/coverage-v8` as a development-only dependency and
+- [x] 1.5 Add `@vitest/coverage-v8` as a development-only dependency and
   configure text, JSON, and HTML reports outside tracked source
-- [ ] 1.6 Measure and record the pre-expansion Node-source coverage without
+- [x] 1.6 Measure and record the pre-expansion Node-source coverage without
   weakening the final required thresholds
-- [ ] 1.7 Add coverage output, browser output, package tarballs, and transient
+- [x] 1.7 Add coverage output, browser output, package tarballs, and transient
   test projects to `.gitignore` while retaining any committed fictional fixture
+- [ ] 1.8 Test Vitest 4.1.10 with the matching `@vitest/coverage-v8` major on
+  Node.js 20 and 22, record its minimum development-runtime impact, and either
+  adopt the matched pair or retain Vitest 3 with the blocker documented
+- [ ] 1.9 Coordinate the chosen toolchain with Dependabot PR #5 and close that
+  PR as superseded or compatibility-blocked only after the decision is verified
 
 ## 2. Deterministic Fixture and Harnesses
 
-- [ ] 2.1 Add one fictional fixture containing active, complete, archived,
+- [x] 2.1 Add one fictional fixture containing active, complete, archived,
   partial-task, main-spec, delta-spec, search, graph, and timeline examples
-- [ ] 2.2 Validate the committed fixture with the supported OpenSpec CLI and
+- [x] 2.2 Validate the committed fixture with the supported OpenSpec CLI and
   assert that it contains no local paths, real project data, credentials, or
   private notes
-- [ ] 2.3 Add a fixture-copy helper that creates a unique temporary project for
+- [x] 2.3 Add a fixture-copy helper that creates a unique temporary project for
   every mutating test and recursively removes it during teardown
-- [ ] 2.4 Add a real-server harness that binds to an operating-system assigned
+- [x] 2.4 Add a real-server harness that binds to an operating-system assigned
   `127.0.0.1` port and returns the actual URL plus an idempotent async close
 - [ ] 2.5 Add lifecycle assertions proving servers, watchers, SSE clients, and
   temporary directories are cleaned after success and failure
 - [ ] 2.6 Add a narrow subprocess seam for OpenSpec archive and browser-launch
   behavior so tests never open desktop applications or require a global CLI
-- [ ] 2.7 Confirm the harness supports concurrent workers without shared ports,
+- [x] 2.7 Confirm the harness supports concurrent workers without shared ports,
   paths, notes, or fixture mutations
 
 ## 3. Domain and Filesystem Coverage
@@ -133,6 +138,9 @@
   within the documented target or record an optimization follow-up
 - [ ] 7.8 Verify the displayed GitHub check names and provide them to
   `harden-github-repository` before its `main` ruleset is enabled
+- [ ] 7.9 Replace the mutable `actions/checkout@v4` and
+  `actions/setup-node@v4` references with reviewed current v7 commit SHAs and
+  release comments, then supersede Dependabot PRs #1 and #2
 
 ## 8. Reliability and Closeout
 

@@ -17,6 +17,10 @@ release automation grow.
 
 - Replace the basic Dependabot schedule with a documented policy that groups
   compatible patch and minor updates while keeping major upgrades isolated.
+- Resolve the five existing major-update pull requests explicitly: supersede
+  the two GitHub Actions PRs with SHA-pinned v7 references, reject the
+  incompatible Node 26 types and failing TypeScript 7 upgrades, and coordinate
+  Vitest 4 with the matching coverage provider in `establish-test-foundation`.
 - Enable the GitHub dependency graph, vulnerability alerts, and Dependabot
   security updates.
 - Enable secret scanning, push protection, non-provider patterns, and validity
@@ -48,6 +52,8 @@ capability specification.
 ## Impact
 
 - Changes `.github/dependabot.yml` and GitHub Actions workflow references.
+- Closes or supersedes Dependabot PRs #1 through #5 only after the replacement
+  decision has been implemented and verified against the current `main`.
 - May add dependency-review and repository-security audit automation.
 - Changes externally managed settings under GitHub Security, Actions, Rules,
   Branches, Collaborators, Webhooks, Deploy keys, Environments, and Apps.

@@ -120,6 +120,9 @@ fail below 80 percent statements, 80 percent lines, 80 percent functions, or 70
 percent branches. Thresholds SHALL NOT be reduced without an approved OpenSpec
 exception and restoration task.
 
+Vitest and its coverage provider SHALL use the same major and any major upgrade
+SHALL pass the supported Node.js matrix before adoption.
+
 #### Scenario: Untested Node behavior lowers coverage
 
 - **WHEN** a pull request reduces a configured coverage metric below its
@@ -131,6 +134,12 @@ exception and restoration task.
 - **WHEN** the aggregate threshold is satisfied
 - **THEN** review still verifies explicit scenarios for artifact writes, tasks,
   notes, archives, validation errors, and failed-write integrity
+
+#### Scenario: A test-tooling major is proposed
+
+- **WHEN** Dependabot proposes a new Vitest major
+- **THEN** the matching coverage-provider major is evaluated in the same change
+  on all supported Node.js versions before either dependency is adopted
 
 ### Requirement: CI exposes stable verification gates
 

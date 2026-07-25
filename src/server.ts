@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { readFileSync, existsSync } from "node:fs";
+import type { AddressInfo } from "node:net";
 import { dirname, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ProjectRoot } from "./openspec/discover.js";
@@ -347,11 +348,14 @@ export function startServer(opts: ServerOptions) {
   return new Promise<{ url: string; close: () => Promise<void> }>((resolvePromise, reject) => {
     server.once("error", reject);
     server.listen(port, host, () => {
-      const url = `http://${host}:${port}`;
+      const address = server.address() as AddressInfo;
+      const url = `http://${host}:${address.port}`;
+      let closePromise: Promise<void> | undefined;
+
       resolvePromise({
         url,
-        close: () =>
-          new Promise((resClose, rejClose) => {
+        close: () => {
+          closePromise ??= new Promise((resClose, rejClose) => {
             watcher.close();
             for (const c of sseClients.values()) {
               try {
@@ -362,7 +366,9 @@ export function startServer(opts: ServerOptions) {
             }
             sseClients.clear();
             server.close((e) => (e ? rejClose(e) : resClose()));
-          }),
+          });
+          return closePromise;
+        },
       });
     });
   });

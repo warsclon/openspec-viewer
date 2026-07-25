@@ -51,7 +51,39 @@ explicit compatibility review. Dependabot security updates remain eligible to
 open immediately and must not wait for the routine monthly maintenance window.
 Automatic merge is out of scope.
 
-### 3. Use GitHub-native security analysis first
+### 3. Resolve the current major-update backlog intentionally
+
+The five Dependabot pull requests opened on 2026-07-23 are version updates, not
+Dependabot security-update PRs. Their original checks ran before the repository
+guidance and OpenSpec plans were merged, so those results are not sufficient
+evidence for the current `main`.
+
+| PR | Update | Decision |
+| --- | --- | --- |
+| #1 | `actions/setup-node` v4 to v7 | Supersede with the reviewed current v7 commit SHA and version comment |
+| #2 | `actions/checkout` v4 to v7 | Supersede with the reviewed current v7 commit SHA and version comment |
+| #3 | `@types/node` 22 to 26 | Reject while the supported runtime matrix is Node.js 20 and 22 |
+| #4 | TypeScript 5 to 7 | Reject because the current PR fails typecheck and needs an intentional migration |
+| #5 | Vitest 3 to 4 | Evaluate and, if compatible, supersede through `establish-test-foundation` with matching `@vitest/coverage-v8` |
+
+The Actions upgrades are useful because v7 contains dependency and
+pull-request safety improvements and removes the deprecated action runtime
+warning. They will not be merged as mutable `@v7` references. The replacement
+CI change will use full reviewed digests, run on the current base, and preserve
+read-only permissions.
+
+The Node types must describe the oldest supported runtime rather than the
+newest available release. TypeScript 7 remains ignored until a separate
+migration has a green typecheck and documented compatibility impact. Vitest 4
+is a coordinated test-tooling decision because its coverage provider must use
+the same major and its transitive tooling raises the minimum supported
+development runtime within Node.js 20.
+
+Each original PR is closed only after its replacement lands or its rejection
+reason and revisit trigger are recorded. This keeps the decision auditable
+without treating every green Dependabot PR as automatically desirable.
+
+### 4. Use GitHub-native security analysis first
 
 CodeQL default setup will analyze JavaScript and TypeScript. Pull requests that
 modify dependency manifests or lockfiles will also run GitHub's dependency
@@ -59,14 +91,14 @@ review. This avoids adding runtime dependencies or long-lived service tokens.
 Additional scanners can be proposed later if the native controls leave a
 demonstrated gap.
 
-### 4. Pin every reusable action to a reviewed commit
+### 5. Pin every reusable action to a reviewed commit
 
 Workflow action references will use full commit digests with a trailing release
 comment for readability. Dependabot will continue proposing action updates.
 GitHub-owned actions are preferred; any future third-party action requires a
 documented reason, reviewed source, minimal permissions, and a pinned digest.
 
-### 5. Protect `main` without deadlocking a single maintainer
+### 6. Protect `main` without deadlocking a single maintainer
 
 The default-branch ruleset will require a pull request, successful Node.js 20
 and 22 CI jobs, successful CodeQL analysis, dependency review when applicable,
@@ -82,7 +114,7 @@ A narrowly scoped, documented maintainer bypass will be used only for recovery.
 It must not be available to GitHub Apps, ordinary collaborators, or workflow
 tokens.
 
-### 6. Keep workflow authority minimal
+### 7. Keep workflow authority minimal
 
 Default workflow permissions remain read-only and Actions cannot approve pull
 requests. Each workflow declares its permissions explicitly. Pull-request
@@ -90,7 +122,7 @@ workflows receive no repository secrets and no write permission. A future
 release workflow must request its additional permission only at the publishing
 job or protected environment boundary.
 
-### 7. Verify controls from both API state and behavior
+### 8. Verify controls from both API state and behavior
 
 The change is complete only when GitHub reports the expected settings and a
 representative pull request proves the ruleset and checks are enforced. Secret
@@ -100,13 +132,16 @@ created.
 
 ## Rollout Order
 
-1. Capture the current settings and successful CI check names.
-2. Update Dependabot and pin existing action references.
-3. Enable dependency, secret, and code-scanning controls.
-4. Let all required checks complete successfully at least once.
-5. Create the `main` ruleset using the observed check names.
-6. Exercise the ruleset and push protection with safe test cases.
-7. Audit repository access and record final evidence.
+1. Capture the current settings, open dependency PRs, and successful CI check
+   names.
+2. Complete the test-foundation compatibility decision for Vitest 4.
+3. Update Dependabot, replace Actions with pinned v7 digests, and resolve PRs
+   #1 through #5.
+4. Enable dependency, secret, and code-scanning controls.
+5. Let all required checks complete successfully at least once.
+6. Create the `main` ruleset using the observed check names.
+7. Exercise the ruleset and push protection with safe test cases.
+8. Audit repository access and record final evidence.
 
 This order avoids creating a ruleset that requires a check GitHub has not yet
 registered and therefore cannot satisfy.
@@ -119,6 +154,10 @@ registered and therefore cannot satisfy.
   cap open pull requests, and leave majors isolated.
 - [Grouped updates hide the failing dependency] → Require the full CI matrix and
   split the group when diagnosis is needed.
+- [A major update exceeds the supported runtime matrix] → Reject it with a
+  recorded reason and revisit only when the compatibility matrix changes.
+- [Vitest and its coverage provider drift across majors] → Upgrade them as one
+  tested dependency slice or retain the current matched pair.
 - [Mutable Actions dependency is compromised] → Pin reviewed digests and let
   Dependabot propose digest changes.
 - [Security feature is unavailable on the current plan] → Record it as
