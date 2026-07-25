@@ -18,6 +18,9 @@
     "start": "node dist/cli.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:unit": "vitest run test/cli-args.test.ts test/project.test.ts test/spec-diff.test.ts test/tasks.test.ts",
+    "test:integration": "vitest run test/fixture.test.ts test/server-lifecycle.test.ts",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
@@ -44,8 +47,9 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^22.15.21",
+    "@vitest/coverage-v8": "^4.1.10",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
-    "vitest": "^3.2.4"
+    "vitest": "^4.1.10"
   }
 }

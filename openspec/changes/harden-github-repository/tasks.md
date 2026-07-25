@@ -31,8 +31,20 @@
   pass the complete required CI and security matrix
 - [ ] 2.6 Validate the YAML structure locally and confirm GitHub accepts both
   update configurations on the repository dependency graph page
-- [ ] 2.7 Review every existing Dependabot pull request and merge, close, or
-  supersede it after the grouped policy becomes active, recording the reason
+- [x] 2.7 Record the security and compatibility decision for Dependabot PRs #1
+  through #5 in `design.md`
+- [ ] 2.8 After `establish-test-foundation` replaces `actions/setup-node`, verify
+  its current-base CI and close PR #1 as superseded
+- [ ] 2.9 After `establish-test-foundation` replaces `actions/checkout`, verify
+  its current-base CI and close PR #2 as superseded
+- [ ] 2.10 Close PR #3 with the supported Node.js 20/22 type-matrix reason and
+  ignore incompatible `@types/node` majors until that matrix changes
+- [ ] 2.11 Close PR #4 with its observed TypeScript 7 typecheck failure and
+  ignore TypeScript majors until an explicit compiler-migration change exists
+- [x] 2.12 Resolve PR #5 from `establish-test-foundation`: adopt Vitest 4 only
+  with the matching coverage provider and green Node.js 20/22 checks, then close
+  the original PR as superseded; otherwise close it with the compatibility
+  blocker and retain the matched Vitest 3 toolchain
 
 ## 3. Dependency and Secret Protection
 
@@ -65,9 +77,9 @@
   dependency change introduces a vulnerability at the agreed severity threshold
 - [ ] 4.4 Give the dependency-review workflow only `contents: read` permission
   unless a separately justified permission is required
-- [ ] 4.5 Replace `actions/checkout@v4`, `actions/setup-node@v4`, and every new
-  reusable action reference with a reviewed full commit SHA plus a release
-  version comment
+- [ ] 4.5 Verify the CI replacements from `establish-test-foundation` use
+  reviewed v7 full commit SHAs plus release comments, and require the same
+  format for every new reusable action reference
 - [ ] 4.6 Configure repository Actions policy to allow GitHub-owned actions and
   only explicitly reviewed third-party actions; reject mutable unreviewed
   actions

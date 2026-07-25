@@ -20,6 +20,13 @@ independent and SHALL NOT be automatically merged.
 - **THEN** it opens or retains an independent pull request for explicit
   compatibility review
 
+#### Scenario: A major update is rejected
+
+- **WHEN** a major update fails required checks or exceeds the supported Node.js
+  or toolchain compatibility matrix
+- **THEN** the pull request is closed with the evidence and revisit trigger, and
+  Dependabot suppresses equivalent major proposals until that trigger changes
+
 #### Scenario: A vulnerable dependency is detected
 
 - **WHEN** GitHub identifies a dependency vulnerability affecting the default

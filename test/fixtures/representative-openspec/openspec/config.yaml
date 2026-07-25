@@ -1,0 +1,4 @@
+schema: spec-driven
+
+context: |
+  Fictional project used only by openspec-viewer automated tests.
