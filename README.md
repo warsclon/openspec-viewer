@@ -68,7 +68,7 @@ npm run dev -- --path /path/to/project
 | Option | Description |
 |--------|-------------|
 | `[path]` / `--path <dir>` | Project root to scan (default: cwd) |
-| `-p, --port <n>` | Port (default: `4321`) |
+| `-p, --port <n>` | Port (default: `4321`; use `0` for an ephemeral port) |
 | `--host <host>` | Host (default: `127.0.0.1`) |
 | `--no-archive` | Hide archived changes |
 | `--no-open` | Do not open the browser |
@@ -132,6 +132,7 @@ npm run build
 | `npm run dev` | Run CLI via `tsx` |
 | `npm run build` | Compile TypeScript + copy UI assets |
 | `npm test` | Run unit tests (Vitest) |
+| `npm run test:package` | Pack, clean-install, and smoke-test the published CLI |
 | `npm run typecheck` | `tsc --noEmit` |
 
 ## Project layout

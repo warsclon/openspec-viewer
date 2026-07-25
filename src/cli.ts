@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, realpathSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { findOpenspecRoot } from "./openspec/discover.js";
-import { startServer } from "./server.js";
+import { startServer, type ServerOptions } from "./server.js";
 
 function packageVersion(): string {
   try {
@@ -16,14 +16,13 @@ function packageVersion(): string {
   }
 }
 
-function printHelp() {
-  console.log(`openspec-viewer — local web UI for OpenSpec
+const HELP = `openspec-viewer — local web UI for OpenSpec
 
 Usage:
   openspec-viewer [options] [path]
 
 Options:
-  -p, --port <n>     Port (default: 4321)
+  -p, --port <n>     Port (default: 4321; 0 selects an ephemeral port)
   --host <host>      Host (default: 127.0.0.1)
   --path <dir>       Project to scan (default: cwd)
   --no-archive       Hide archived changes (shown by default)
@@ -35,14 +34,13 @@ Examples:
   openspec-viewer
   openspec-viewer ../my-project
   openspec-viewer --port 5173 --path ./apps/api
-`);
-}
+`;
 
-function parseArgs(argv: string[]) {
+export function parseArgs(argv: string[], cwd = process.cwd()) {
   const opts = {
     port: 4321,
     host: "127.0.0.1",
-    path: process.cwd(),
+    path: cwd,
     archive: true,
     open: true,
     help: false,
@@ -57,9 +55,15 @@ function parseArgs(argv: string[]) {
     else if (a === "--no-open") opts.open = false;
     else if (a === "--no-archive") opts.archive = false;
     else if (a === "--archive") opts.archive = true;
-    else if (a === "--port" || a === "-p") opts.port = Number(argv[++i]);
+    else if (a === "--port" || a === "-p") {
+      const rawPort = argv[++i];
+      opts.port =
+        rawPort !== undefined && /^\d+$/.test(rawPort)
+          ? Number(rawPort)
+          : Number.NaN;
+    }
     else if (a === "--host") opts.host = argv[++i] ?? opts.host;
-    else if (a === "--path") opts.path = resolve(argv[++i] ?? ".");
+    else if (a === "--path") opts.path = resolve(cwd, argv[++i] ?? ".");
     else if (a.startsWith("-")) {
       throw new Error(`Unknown option: ${a}`);
     } else {
@@ -67,58 +71,106 @@ function parseArgs(argv: string[]) {
     }
   }
 
-  if (rest[0]) opts.path = resolve(rest[0]);
-  if (!Number.isFinite(opts.port) || opts.port <= 0) {
+  if (rest[0]) opts.path = resolve(cwd, rest[0]);
+  if (!Number.isInteger(opts.port) || opts.port < 0 || opts.port > 65535) {
     throw new Error(`Invalid port: ${opts.port}`);
   }
   return opts;
 }
 
-function openBrowser(url: string) {
-  const platform = process.platform;
+export type BrowserLaunchHandle = {
+  once(event: "error", listener: (error: Error) => void): unknown;
+  unref(): void;
+};
+
+export type BrowserLauncher = (
+  command: string,
+  args: string[],
+) => BrowserLaunchHandle | void;
+
+const defaultBrowserLauncher: BrowserLauncher = (command, args) => {
+  return spawn(command, args, { detached: true, stdio: "ignore" });
+};
+
+export function openBrowser(
+  url: string,
+  platform: NodeJS.Platform = process.platform,
+  launch: BrowserLauncher = defaultBrowserLauncher,
+): void {
   const cmd = platform === "darwin" ? "open" : platform === "win32" ? "cmd" : "xdg-open";
   const args = platform === "win32" ? ["/c", "start", "", url] : [url];
-  spawn(cmd, args, { detached: true, stdio: "ignore" }).unref();
+  const child = launch(cmd, args);
+  if (child) {
+    child.once("error", () => {
+      // Opening a browser is optional; the local server remains available.
+    });
+    child.unref();
+  }
 }
 
-async function main() {
-  const opts = parseArgs(process.argv.slice(2));
+export type CliDependencies = {
+  cwd?: string;
+  log?: (message?: string) => void;
+  start?: (options: ServerOptions) => ReturnType<typeof startServer>;
+  open?: (url: string) => void;
+};
+
+export async function runCli(
+  argv: string[],
+  dependencies: CliDependencies = {},
+): Promise<Awaited<ReturnType<typeof startServer>> | undefined> {
+  const opts = parseArgs(argv, dependencies.cwd);
+  const log = dependencies.log ?? console.log;
   if (opts.help) {
-    printHelp();
-    return;
+    log(HELP);
+    return undefined;
   }
   if (opts.version) {
-    console.log(packageVersion());
-    return;
+    log(packageVersion());
+    return undefined;
   }
 
   const root = findOpenspecRoot(opts.path);
-  const { url } = await startServer({
+  const server = await (dependencies.start ?? startServer)({
     root,
     host: opts.host,
     port: opts.port,
     includeArchive: opts.archive,
   });
+  const { url } = server;
 
-  console.log("");
-  console.log("  OpenSpec Viewer");
-  console.log(`  project:  ${root.projectDir}`);
-  console.log(`  openspec: ${root.openspecDir}`);
-  console.log(`  UI:       ${url}`);
-  console.log("");
-  console.log("  Ctrl+C to quit · live reload on · ⌘K/Ctrl+K search · #/change/… deep links");
-  console.log("");
+  log("");
+  log("  OpenSpec Viewer");
+  log(`  project:  ${root.projectDir}`);
+  log(`  openspec: ${root.openspecDir}`);
+  log(`  UI:       ${url}`);
+  log("");
+  log("  Ctrl+C to quit · live reload on · ⌘K/Ctrl+K search · #/change/… deep links");
+  log("");
 
   if (opts.open) {
     try {
-      openBrowser(url);
+      (dependencies.open ?? openBrowser)(url);
     } catch {
       // browser optional
     }
   }
+  return server;
 }
 
-main().catch((err) => {
-  console.error(err instanceof Error ? err.message : err);
-  process.exit(1);
-});
+function isDirectExecution(): boolean {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  try {
+    return realpathSync(entry) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (isDirectExecution()) {
+  runCli(process.argv.slice(2)).catch((err) => {
+    console.error(err instanceof Error ? err.message : err);
+    process.exit(1);
+  });
+}

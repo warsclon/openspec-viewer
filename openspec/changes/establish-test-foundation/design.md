@@ -79,6 +79,13 @@ assigned port, expose the actual bound URL, and provide an idempotent async
 close operation. Tests will wait for readiness, close SSE clients, stop file
 watchers, and remove temporary directories in teardown.
 
+The installed-CLI harness will pass `--port 0` so the child process retains the
+operating-system-assigned listener without a release-and-rebind race. It will
+parse the CLI's reported URL and use that exact address for readiness and
+shutdown assertions. Port `0` is therefore a supported explicit request for an
+ephemeral listener; negative, fractional, non-numeric, and above-65535 values
+remain invalid.
+
 If production code needs a small lifecycle refactor to support this, the change
 must preserve CLI behavior and begin with a failing public-seam test.
 
@@ -96,6 +103,9 @@ HTTP tests use real requests and real files. Browser tests use the built or
 development UI served by the real server. Subprocess boundaries such as
 OpenSpec archive and OS browser launch may use injected narrow command runners
 so tests do not open applications or depend on globally installed tools.
+The default detached browser launcher observes asynchronous process errors and
+treats a missing platform opener as optional, so a successfully started local
+server remains available.
 
 Create and archive commands run against an isolated temporary copy of the
 selected OpenSpec project. Lifecycle copies reject symbolic links and
