@@ -31,7 +31,7 @@
   every mutating test and recursively removes it during teardown
 - [x] 2.4 Add a real-server harness that binds to an operating-system assigned
   `127.0.0.1` port and returns the actual URL plus an idempotent async close
-- [ ] 2.5 Add lifecycle assertions proving servers, watchers, SSE clients, and
+- [x] 2.5 Add lifecycle assertions proving servers, watchers, SSE clients, and
   temporary directories are cleaned after success and failure
 - [ ] 2.6 Add a narrow subprocess seam for OpenSpec archive and browser-launch
   behavior so tests never open desktop applications or require a global CLI
@@ -70,21 +70,21 @@
 
 ## 4. Real HTTP and SSE Integration
 
-- [ ] 4.1 Test health, project, changes, change detail, graph, next-up, and search
+- [x] 4.1 Test health, project, changes, change detail, graph, next-up, and search
   through real HTTP requests against the fixture
-- [ ] 4.2 Test missing routes, unknown changes, malformed encoding, empty search,
+- [x] 4.2 Test missing routes, unknown changes, malformed encoding, empty search,
   invalid JSON, missing required fields, and documented status codes
-- [ ] 4.3 Test proposal, design, raw-task, structured-task, task-mutation,
+- [x] 4.3 Test proposal, design, raw-task, structured-task, task-mutation,
   task-toggle, and note writes and verify exact persisted content
-- [ ] 4.4 Test change creation and archive requests, including confirmation,
+- [x] 4.4 Test change creation and archive requests, including confirmation,
   skip-spec arguments, subprocess failures, and resulting filesystem state
-- [ ] 4.5 Test archived artifact read-only enforcement for every mutation route
+- [x] 4.5 Test archived artifact read-only enforcement for every mutation route
   and confirm rejected requests leave files unchanged
-- [ ] 4.6 Test SSE connection, hello event, filesystem-triggered reload event,
+- [x] 4.6 Test SSE connection, hello event, filesystem-triggered reload event,
   mutation-triggered reload event, disconnect, and server shutdown
-- [ ] 4.7 Test concurrent independent server instances and confirm neither
+- [x] 4.7 Test concurrent independent server instances and confirm neither
   instance observes or mutates the other fixture
-- [ ] 4.8 Verify every integration test closes the server and watcher even when
+- [x] 4.8 Verify every integration test closes the server and watcher even when
   an assertion or request fails
 
 ## 5. Installed CLI and Package Verification

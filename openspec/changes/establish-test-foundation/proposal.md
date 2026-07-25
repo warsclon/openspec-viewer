@@ -35,6 +35,8 @@ required checks exercise the behavior users depend on.
 - Test every public HTTP read and mutation family through real requests,
   including validation errors, archived read-only enforcement, persistence,
   SSE, and shutdown.
+- Define stable JSON status classes and validate typed mutation fields before
+  any HTTP write reaches project data.
 - Add installed-tarball CLI smoke tests rather than relying only on source
   execution.
 - Add development-only browser automation for the critical user journeys,

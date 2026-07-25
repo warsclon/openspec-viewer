@@ -95,6 +95,16 @@ npm run dev -- --path /path/to/project
 
 Archived changes are **read-only** for OpenSpec artifacts. Local notes remain editable.
 
+JSON API responses use these status classes:
+
+| Status | Meaning |
+|--------|---------|
+| `200` / `201` | The read or mutation completed successfully |
+| `400` | The URL encoding, JSON body, or required input is invalid |
+| `404` | The route, change, or task does not exist |
+| `409` | The mutation conflicts with existing or archived project state |
+| `500` | A local operation or OpenSpec subprocess failed |
+
 ## Deep links
 
 ```
