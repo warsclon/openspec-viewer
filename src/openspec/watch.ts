@@ -1,4 +1,4 @@
-import { watch, type FSWatcher } from "node:fs";
+import { watch } from "node:fs";
 import type { ProjectRoot } from "./discover.js";
 
 export type WatchEvent = {
@@ -7,16 +7,33 @@ export type WatchEvent = {
   at: string;
 };
 
+export type WatchHandle = {
+  on: (event: "error", listener: () => void) => unknown;
+  close: () => void;
+};
+
+export type WatchFactory = (
+  path: string,
+  options: { recursive: true },
+  listener: (event: "rename" | "change", filename: string | Buffer | null) => void,
+) => WatchHandle;
+
+const defaultWatchFactory: WatchFactory = (path, options, listener) =>
+  watch(path, options, listener);
+
 export function watchOpenspec(
   root: ProjectRoot,
   onEvent: (event: WatchEvent) => void,
   debounceMs = 250,
+  watchFactory: WatchFactory = defaultWatchFactory,
 ): { close: () => void } {
-  const watchers: FSWatcher[] = [];
+  const watchers: WatchHandle[] = [];
   let timer: NodeJS.Timeout | null = null;
   let lastPath = root.openspecDir;
+  let closed = false;
 
   const fire = (filename: string | null) => {
+    if (closed) return;
     lastPath = filename ? `${root.openspecDir}/${filename}` : root.openspecDir;
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
@@ -30,7 +47,7 @@ export function watchOpenspec(
 
   try {
     // recursive is supported on macOS/Windows; Linux Node 20+ also in many builds
-    const w = watch(root.openspecDir, { recursive: true }, (_event, filename) => {
+    const w = watchFactory(root.openspecDir, { recursive: true }, (_event, filename) => {
       fire(typeof filename === "string" ? filename : null);
     });
     w.on("error", () => {
@@ -43,7 +60,12 @@ export function watchOpenspec(
 
   return {
     close: () => {
-      if (timer) clearTimeout(timer);
+      if (closed) return;
+      closed = true;
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
       for (const w of watchers) {
         try {
           w.close();

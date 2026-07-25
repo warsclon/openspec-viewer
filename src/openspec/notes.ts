@@ -1,5 +1,6 @@
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   readFileSync,
   writeFileSync,
@@ -7,11 +8,21 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import type { ProjectRoot } from "./discover.js";
+import { ensurePrivateLocalStateIgnore } from "./lifecycle-workspace.js";
 
 const DIR_NAME = ".openspec-viewer";
 
 function safeName(changeName: string): string {
   return changeName.replace(/[^\w.-]+/g, "__");
+}
+
+function assertNoteChangeName(changeName: string): void {
+  if (
+    !/^(?:archive\/)?[a-z0-9][a-z0-9._-]*$/i.test(changeName) ||
+    changeName.includes("..")
+  ) {
+    throw new Error(`Invalid note change name: ${changeName}`);
+  }
 }
 
 export function viewerDir(root: ProjectRoot): string {
@@ -24,12 +35,14 @@ export function notesDir(root: ProjectRoot): string {
 
 export function ensureViewerGitignore(root: ProjectRoot): void {
   const dir = viewerDir(root);
-  mkdirSync(dir, { recursive: true });
-  mkdirSync(notesDir(root), { recursive: true });
+  if (!existsSync(dir)) mkdirSync(dir);
+  ensurePrivateLocalStateIgnore(dir);
 
-  const gi = join(dir, ".gitignore");
-  if (!existsSync(gi)) {
-    writeFileSync(gi, "# local openspec-viewer state (do not commit)\n*\n", "utf8");
+  const localNotesDir = notesDir(root);
+  if (!existsSync(localNotesDir)) mkdirSync(localNotesDir);
+  const notesStat = lstatSync(localNotesDir);
+  if (notesStat.isSymbolicLink() || !notesStat.isDirectory()) {
+    throw new Error("Unsafe local notes directory");
   }
 
   // Only append to an existing root .gitignore (never create one unsolicited).
@@ -44,19 +57,20 @@ export function ensureViewerGitignore(root: ProjectRoot): void {
 }
 
 export function notesPath(root: ProjectRoot, changeName: string): string {
+  assertNoteChangeName(changeName);
   return join(notesDir(root), `${safeName(changeName)}.md`);
 }
 
 export function readNotes(root: ProjectRoot, changeName: string): string {
-  ensureViewerGitignore(root);
   const path = notesPath(root, changeName);
+  ensureViewerGitignore(root);
   if (!existsSync(path)) return "";
   return readFileSync(path, "utf8");
 }
 
 export function writeNotes(root: ProjectRoot, changeName: string, content: string): string {
-  ensureViewerGitignore(root);
   const path = notesPath(root, changeName);
+  ensureViewerGitignore(root);
   writeFileSync(path, content, "utf8");
   return content;
 }

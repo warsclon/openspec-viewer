@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { afterEach, describe, expect, it } from "vitest";
-import { startTestServer, type TestServer } from "./helpers/server.js";
+import { startTestServer, type TestServer } from "../helpers/server.js";
 
 const servers: TestServer[] = [];
 

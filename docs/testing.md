@@ -7,8 +7,8 @@ OpenSpec data and must never read or mutate a developer's active project.
 
 | Layer | Boundary | Command |
 | --- | --- | --- |
-| Unit | CLI parsing and OpenSpec domain behavior | `npm run test:unit` |
-| Integration | Real HTTP server and isolated temporary projects | `npm run test:integration` |
+| Unit | CLI parsing and in-memory OpenSpec transformations | `npm run test:unit` |
+| Integration | Filesystem, subprocess, and real HTTP behavior in isolated temporary projects | `npm run test:integration` |
 | Coverage | All current Vitest tests with V8 source coverage | `npm run test:coverage` |
 | Browser | Real static UI in deterministic Chromium | `npm run test:browser` (introduced later in `establish-test-foundation`) |
 | Package | Packed, clean-installed `openspec-viewer` executable | `npm run test:package` (introduced later in `establish-test-foundation`) |

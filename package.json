@@ -18,8 +18,8 @@
     "start": "node dist/cli.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:unit": "vitest run test/cli-args.test.ts test/project.test.ts test/spec-diff.test.ts test/tasks.test.ts",
-    "test:integration": "vitest run test/fixture.test.ts test/server-lifecycle.test.ts",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "prepublishOnly": "npm run typecheck && npm test && npm run build"
