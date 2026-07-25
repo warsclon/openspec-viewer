@@ -11,7 +11,7 @@ OpenSpec data and must never read or mutate a developer's active project.
 | Integration | Filesystem, subprocess, and real HTTP behavior in isolated temporary projects | `npm run test:integration` |
 | Coverage | All current Vitest tests with V8 source coverage | `npm run test:coverage` |
 | Browser | Real static UI in deterministic Chromium | `npm run test:browser` (introduced later in `establish-test-foundation`) |
-| Package | Packed, clean-installed `openspec-viewer` executable | `npm run test:package` (introduced later in `establish-test-foundation`) |
+| Package | Packed, clean-installed `openspec-viewer` executable | `npm run test:package` |
 
 Run the complete current suite with `npm test` and use `npm run test:watch`
 during focused development. Before every implementation commit, also run:
@@ -21,6 +21,11 @@ npm run typecheck
 npm test
 npm run build
 ```
+
+Run `npm run prepublishOnly` as the complete package validation gate. It runs
+typecheck, the default test projects, and `test:package`. The package test
+rebuilds the package, creates a tarball, installs it offline in a clean
+temporary directory, and invokes only the installed executable.
 
 ## Fixture policy
 

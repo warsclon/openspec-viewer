@@ -109,6 +109,19 @@ into a clean temporary directory, and invoke the installed
 - **THEN** it exits non-zero with actionable English output and does not open a
   browser or create project files
 
+#### Scenario: The CLI requests an ephemeral listener
+
+- **WHEN** the installed CLI starts with `--host 127.0.0.1 --port 0`
+- **THEN** the operating system assigns the child process a unique port and the
+  CLI reports the actual loopback URL without a release-and-rebind race
+
+#### Scenario: The desktop browser opener is unavailable
+
+- **WHEN** the local server starts successfully but the platform browser
+  launcher emits an asynchronous process error
+- **THEN** the CLI keeps the server running because automatic browser launch is
+  optional
+
 ### Requirement: Critical browser workflows are automated
 
 The suite SHALL drive the real static UI in a deterministic Chromium session

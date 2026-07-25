@@ -33,7 +33,7 @@
   `127.0.0.1` port and returns the actual URL plus an idempotent async close
 - [x] 2.5 Add lifecycle assertions proving servers, watchers, SSE clients, and
   temporary directories are cleaned after success and failure
-- [ ] 2.6 Add a narrow subprocess seam for OpenSpec archive and browser-launch
+- [x] 2.6 Add a narrow subprocess seam for OpenSpec archive and browser-launch
   behavior so tests never open desktop applications or require a global CLI
 - [x] 2.7 Confirm the harness supports concurrent workers without shared ports,
   paths, notes, or fixture mutations
@@ -89,19 +89,19 @@
 
 ## 5. Installed CLI and Package Verification
 
-- [ ] 5.1 Expand source CLI tests for help, version, positional path,
+- [x] 5.1 Expand source CLI tests for help, version, positional path,
   `--path`, `--port`, `--host`, archive visibility, `--no-open`, unknown
   options, invalid ports, and missing OpenSpec roots
-- [ ] 5.2 Add a child-process harness that starts the compiled CLI against an
+- [x] 5.2 Add a child-process harness that starts the compiled CLI against an
   isolated fixture, waits for readiness, verifies output, and terminates cleanly
-- [ ] 5.3 Build and inspect `npm pack --json` output for intended files,
+- [x] 5.3 Build and inspect `npm pack --json` output for intended files,
   executable mode, version, license, README, generated UI, and sensitive-file
   exclusions
-- [ ] 5.4 Install the tarball into a clean temporary directory and invoke only
+- [x] 5.4 Install the tarball into a clean temporary directory and invoke only
   its installed `openspec-viewer` binary
 - [ ] 5.5 Verify installed `--help`, `--version`, invalid input, project start,
   health response, and clean termination on Node.js 20 and 22
-- [ ] 5.6 Confirm package smoke never imports source files, local `node_modules`,
+- [x] 5.6 Confirm package smoke never imports source files, local `node_modules`,
   or unlisted repository assets
 
 ## 6. Critical Browser Workflows
