@@ -58,9 +58,9 @@
   cover the full reachable Git history
 - [ ] 3.5 Enable push protection for contributors and confirm bypass requests
   are visible to the maintainer
-- [ ] 3.6 Enable non-provider secret patterns and validity checks where the
+- [x] 3.6 Enable non-provider secret patterns and validity checks where the
   current GitHub plan exposes them; record unsupported controls explicitly
-- [ ] 3.7 Verify private vulnerability reporting remains enabled and that
+- [x] 3.7 Verify private vulnerability reporting remains enabled and that
   `.github/ISSUE_TEMPLATE/config.yml` and `SECURITY.md` route reports to the
   private advisory form
 - [ ] 3.8 Test push protection in a disposable branch using only a
@@ -69,9 +69,9 @@
 
 ## 4. Code and Workflow Security
 
-- [ ] 4.1 Enable CodeQL default setup for JavaScript and TypeScript on pushes and
+- [x] 4.1 Enable CodeQL default setup for JavaScript and TypeScript on pushes and
   pull requests to the default branch
-- [ ] 4.2 Let the initial CodeQL analysis finish and record its exact check name
+- [x] 4.2 Let the initial CodeQL analysis finish and record its exact check name
   and successful result before adding it to the ruleset
 - [x] 4.3 Add a dependency-review workflow for pull requests that fails when a
   dependency change introduces a vulnerability at the agreed severity threshold
@@ -87,26 +87,26 @@
   GitHub Actions cannot create or approve pull-request reviews
 - [x] 4.8 Verify pull-request workflows do not use `pull_request_target`, expose
   repository secrets, or grant write permissions to code from forks
-- [ ] 4.9 Run CI, CodeQL, and dependency review on a representative pull request
+- [x] 4.9 Run CI, CodeQL, and dependency review on a representative pull request
   and retain links to the successful checks in the security checklist
 
 ## 5. Default-Branch Ruleset
 
-- [ ] 5.1 Create an active ruleset targeting the repository default branch
-- [ ] 5.2 Require changes to reach `main` through a pull request and require all
+- [x] 5.1 Create an active ruleset targeting the repository default branch
+- [x] 5.2 Require changes to reach `main` through a pull request and require all
   review conversations to be resolved
-- [ ] 5.3 Set required approvals to zero for the current single-maintainer model
+- [x] 5.3 Set required approvals to zero for the current single-maintainer model
   and record the trigger for raising it to one when a second active maintainer
   exists
-- [ ] 5.4 Require the observed Node.js 20, Node.js 22, and CodeQL status checks,
+- [x] 5.4 Require the observed Node.js 20, Node.js 22, and CodeQL status checks,
   plus dependency review when GitHub exposes it as an always-applicable check
-- [ ] 5.5 Require branches to be up to date before merge and enable linear
+- [x] 5.5 Require branches to be up to date before merge and enable linear
   history if it remains compatible with the selected merge strategies
-- [ ] 5.6 Block branch deletion and non-fast-forward updates, including force
+- [x] 5.6 Block branch deletion and non-fast-forward updates, including force
   pushes
-- [ ] 5.7 Configure only the documented maintainer recovery bypass and confirm
+- [x] 5.7 Configure only the documented maintainer recovery bypass and confirm
   workflows, GitHub Apps, and ordinary collaborators cannot use it
-- [ ] 5.8 Attempt a harmless direct update to `main` and a pull request with a
+- [x] 5.8 Attempt a harmless direct update to `main` and a pull request with a
   deliberately failing check, confirming GitHub blocks both paths
 - [ ] 5.9 Merge a fully green representative pull request through the normal
   path and confirm the ruleset permits it without using the bypass
