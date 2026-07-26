@@ -10,10 +10,10 @@ OpenSpec data and must never read or mutate a developer's active project.
 | Unit | CLI parsing and in-memory OpenSpec transformations | `npm run test:unit` |
 | Integration | Filesystem, subprocess, and real HTTP behavior in isolated temporary projects | `npm run test:integration` |
 | Coverage | All current Vitest tests with V8 source coverage | `npm run test:coverage` |
-| Browser | Real static UI in deterministic Chromium | `npm run test:browser` (introduced later in `establish-test-foundation`) |
+| Browser | Real static UI in deterministic Chromium | `npm run test:browser` |
 | Package | Packed, clean-installed `openspec-viewer` executable | `npm run test:package` |
 
-Run the complete current suite with `npm test` and use `npm run test:watch`
+Run the complete Vitest suite with `npm test` and use `npm run test:watch`
 during focused development. Before every implementation commit, also run:
 
 ```bash
@@ -26,6 +26,11 @@ Run `npm run prepublishOnly` as the complete package validation gate. It runs
 typecheck, the default test projects, and `test:package`. The package test
 rebuilds the package, creates a tarball, installs it offline in a clean
 temporary directory, and invokes only the installed executable.
+
+Run `npm run test:browser` after browser UI or end-to-end workflow changes.
+Playwright uses deterministic Chromium settings, creates one isolated fictional
+project per test, blocks external requests, and retains traces and screenshots
+only when a test fails.
 
 ## Fixture policy
 

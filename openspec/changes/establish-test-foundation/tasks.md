@@ -6,7 +6,7 @@
   2026-07-24 baseline of 4 files and 11 passing tests
 - [x] 1.3 Add `docs/testing.md` with the test layers, commands, fixture policy,
   ownership, failure diagnostics, and TDD red/green expectations
-- [ ] 1.4 Add `test:unit`, `test:integration`, `test:coverage`, `test:browser`,
+- [x] 1.4 Add `test:unit`, `test:integration`, `test:coverage`, `test:browser`,
   and `test:package` scripts with non-overlapping responsibilities
 - [x] 1.5 Add `@vitest/coverage-v8` as a development-only dependency and
   configure text, JSON, and HTML reports outside tracked source
@@ -106,23 +106,23 @@
 
 ## 6. Critical Browser Workflows
 
-- [ ] 6.1 Add `@playwright/test` as a development-only dependency and configure
+- [x] 6.1 Add `@playwright/test` as a development-only dependency and configure
   deterministic Chromium, viewport, locale, timezone, theme, and reduced motion
-- [ ] 6.2 Launch the real server and isolated fixture from Playwright without
+- [x] 6.2 Launch the real server and isolated fixture from Playwright without
   external network requests or desktop browser side effects
-- [ ] 6.3 Test initial load and navigation across Now, Graph, Timeline, Board,
+- [x] 6.3 Test initial load and navigation across Now, Graph, Timeline, Board,
   change detail, artifact tabs, and archived changes
-- [ ] 6.4 Test global search by keyboard, result selection, deep-link updates,
+- [x] 6.4 Test global search by keyboard, result selection, deep-link updates,
   focus restoration, empty results, and direct deep-link loading
-- [ ] 6.5 Test graph focus, change/spec navigation, next-task navigation, and
+- [x] 6.5 Test graph focus, change/spec navigation, next-task navigation, and
   observable state after browser history changes
-- [ ] 6.6 Test task toggle, add, edit, move, delete, and section operations and
+- [x] 6.6 Test task toggle, add, edit, move, delete, and section operations and
   verify persistence after a full page reload
-- [ ] 6.7 Test proposal, design, tasks, and notes editing plus archive read-only
+- [x] 6.7 Test proposal, design, tasks, and notes editing plus archive read-only
   controls and visible validation errors
-- [ ] 6.8 Assert primary controls have accessible names, keyboard focus is
+- [x] 6.8 Assert primary controls have accessible names, keyboard focus is
   visible, dialogs restore focus, and critical journeys need no pointer input
-- [ ] 6.9 Fail on unexpected browser console errors, page errors, or external
+- [x] 6.9 Fail on unexpected browser console errors, page errors, or external
   requests and retain trace and screenshot only on failure
 
 ## 7. Coverage and CI Gates

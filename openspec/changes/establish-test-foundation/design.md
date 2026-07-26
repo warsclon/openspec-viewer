@@ -211,6 +211,21 @@ browser suite uses one deterministic Chromium configuration with:
 Pixel snapshots are avoided. Screenshots and traces are retained only when a
 test fails.
 
+Browser-driven mutations delay reloads during the short window caused by their
+own SSE and filesystem events. Dirty state is tracked per editor or task field,
+and reload events remain pending until the final dirty value is saved or
+reverted. The pending reload is then replayed so a concurrent local client is
+eventually visible without replacing unsaved input.
+
+Keyboard coverage includes visible focus, accessible control names,
+keyboard-operable graph nodes, inert modal backgrounds, trapped modal focus,
+and focus restoration after modal and search workflows.
+
+Structured task round-trips preserve explicitly empty Markdown sections. This
+keeps the existing add-section workflow observable before its first task is
+created and allows subsequent rename, task-add, or delete operations to target
+the new section reliably.
+
 ### 7. Give CI checks stable responsibilities
 
 CI will expose stable named checks suitable for a repository ruleset:
