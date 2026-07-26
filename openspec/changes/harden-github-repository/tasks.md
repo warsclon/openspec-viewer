@@ -13,7 +13,7 @@
 - [ ] 1.5 Record the baseline and expected final state in a versioned
   `docs/repository-security.md` checklist without account IDs, tokens, or private
   metadata
-- [ ] 1.6 Complete `establish-test-foundation` and observe its stable CI check
+- [x] 1.6 Complete `establish-test-foundation` and observe its stable CI check
   names on GitHub before configuring required checks or the `main` ruleset
 
 ## 2. Dependabot Policy
