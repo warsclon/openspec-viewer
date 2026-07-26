@@ -143,26 +143,26 @@
   within the documented target or record an optimization follow-up
 - [x] 7.8 Verify the displayed GitHub check names and provide them to
   `harden-github-repository` before its `main` ruleset is enabled
-- [ ] 7.9 Replace the mutable `actions/checkout@v4` and
+- [x] 7.9 Replace the mutable `actions/checkout@v4` and
   `actions/setup-node@v4` references with reviewed current v7 commit SHAs and
   release comments, then supersede Dependabot PRs #1 and #2
 
 ## 8. Reliability and Closeout
 
-- [ ] 8.1 Run unit/integration tests repeatedly with randomized ordering where
+- [x] 8.1 Run unit/integration tests repeatedly with randomized ordering where
   supported and resolve resource, timing, and shared-state failures
-- [ ] 8.2 Run the complete suite from a clean clone or equivalent isolated
+- [x] 8.2 Run the complete suite from a clean clone or equivalent isolated
   checkout with no globally installed OpenSpec CLI
-- [ ] 8.3 Confirm tests leave no server, watcher, browser, temporary project,
+- [x] 8.3 Confirm tests leave no server, watcher, browser, temporary project,
   tarball, installation, coverage, or trace resource behind
-- [ ] 8.4 Update `CONTRIBUTING.md`, the pull-request template, and README
+- [x] 8.4 Update `CONTRIBUTING.md`, the pull-request template, and README
   development commands with the new verification layers
 - [x] 8.5 Replace the duplicated general public-seam tasks in
   `prepare-public-launch` with a dependency on this change while retaining
   launch-specific demo and media checks there
 - [x] 8.6 Add this change as an explicit prerequisite for the required-check and
   ruleset tasks in `harden-github-repository`
-- [ ] 8.7 Run the full Node.js 20 and 22, browser, package, coverage, build,
+- [x] 8.7 Run the full Node.js 20 and 22, browser, package, coverage, build,
   OpenSpec, and clean-worktree validation and record the results
 - [x] 8.8 Run `openspec validate establish-test-foundation --strict` and resolve
   every artifact validation error before implementation begins
