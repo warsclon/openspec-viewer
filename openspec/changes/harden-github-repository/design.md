@@ -135,7 +135,16 @@ A narrowly scoped, documented maintainer bypass will be used only for recovery.
 It must not be available to GitHub Apps, ordinary collaborators, or workflow
 tokens.
 
-### 7. Keep workflow authority minimal
+### 7. Default GitHub Apps to selected repositories
+
+Retained GitHub Apps use repository-selected access and include only the
+repositories required for their current purpose. Account-wide access is not a
+repository requirement. It remains available only as an optional exception
+when the maintainer privately records the current necessity, accountable owner,
+minimum permissions, and review date. OAuth authorizations receive the same
+purpose-and-scope review and are revoked when they are unused or unjustified.
+
+### 8. Keep workflow authority minimal
 
 Default workflow permissions remain read-only and Actions cannot approve pull
 requests. Each workflow declares its permissions explicitly. Pull-request
@@ -143,7 +152,7 @@ workflows receive no repository secrets and no write permission. A future
 release workflow must request its additional permission only at the publishing
 job or protected environment boundary.
 
-### 8. Verify controls from both API state and behavior
+### 9. Verify controls from both API state and behavior
 
 The change is complete only when GitHub reports the expected settings and a
 representative pull request proves the ruleset and checks are enforced. Secret

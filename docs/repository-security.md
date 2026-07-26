@@ -115,7 +115,7 @@ Inventory captured through the GitHub API on 2026-07-26:
 | Actions secrets | None | Keep ordinary CI secret-free |
 | Actions variables | None | Add only a documented, non-sensitive value when required |
 | Environments | None | Create a protected release environment only with an approved release design |
-| GitHub Apps | Manual review in progress; detailed account inventory is not public repository data | Complete least-privilege remediation before closeout |
+| GitHub Apps | Manual review in progress; detailed account inventory is not public repository data | Use selected repositories by default; retain account-wide access only as a privately documented exception |
 | OAuth integrations | No repository-scoped API inventory is available | Complete and retain a private account-level purpose and scope review |
 
 Do not retain an identity or integration without a current owner, purpose, and
@@ -129,6 +129,13 @@ permission-by-permission inventory is retained privately. OAuth token values,
 application identifiers, unrelated private repository names, installation
 identifiers, and the detailed account inventory must not be recorded in this
 public repository.
+
+GitHub App installations use selected repositories by default and include only
+the repositories required for their current purpose. Account-wide installation
+access is optional, never required by this repository, and may be retained only
+when its necessity, accountable owner, minimum permissions, and review date are
+documented privately. Retained OAuth authorizations require the same private
+record of purpose, scopes, owner, and review date.
 
 ## Dependency update policy
 

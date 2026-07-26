@@ -124,12 +124,32 @@ The maintainer SHALL periodically review collaborators, deploy keys, webhooks,
 Actions secrets and variables, environments, and installed GitHub Apps. Access
 without a current documented purpose SHALL be removed.
 
+Installed GitHub Apps SHALL use repository-selected access by default and SHALL
+be granted only the repositories required for their current purpose.
+Account-wide access MAY be retained only as an optional, explicitly documented
+exception with a current necessity, accountable owner, and review date; it
+SHALL NOT be a baseline requirement for contributing to or maintaining this
+repository.
+
 #### Scenario: Repository access is audited
 
 - **WHEN** the hardening change is completed or a scheduled security review
   occurs
 - **THEN** every write-capable integration and identity has a documented
   purpose, minimum required permission, and accountable owner
+
+#### Scenario: A GitHub App is retained
+
+- **WHEN** a maintainer retains a GitHub App used with this repository
+- **THEN** the installation uses only selected repositories unless a current
+  account-wide exception is privately documented and approved
+
+#### Scenario: An OAuth authorization is retained
+
+- **WHEN** a maintainer reviews an authorized OAuth application
+- **THEN** its current purpose, requested scopes, accountable owner, and review
+  date are recorded privately, and the authorization is revoked when its
+  purpose or required scopes cannot be justified
 
 ### Requirement: Security posture is repeatably verifiable
 

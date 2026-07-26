@@ -125,8 +125,11 @@
 - [x] 6.4 Remove unused Actions secrets and variables, scope retained values to
   the smallest environment, and document their rotation owner without recording
   their values
-- [ ] 6.5 Review installed GitHub Apps and OAuth integrations and remove or
-  reduce any repository access that is broader than their current purpose
+- [ ] 6.5 Configure retained GitHub Apps for selected repositories by default,
+  limiting each installation to the repositories required for its current
+  purpose; retain account-wide access only as an optional, privately documented
+  exception, and review each OAuth authorization's purpose, scopes, owner, and
+  review date before retaining it
 - [x] 6.6 Protect any future release environment with the minimum deployment
   permissions and keep package publication credentials out of ordinary CI
 
