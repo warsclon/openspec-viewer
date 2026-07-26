@@ -127,18 +127,18 @@
 
 ## 7. Coverage and CI Gates
 
-- [ ] 7.1 Configure Node-source coverage thresholds at 80 percent statements,
+- [x] 7.1 Configure Node-source coverage thresholds at 80 percent statements,
   lines, and functions and 70 percent branches
-- [ ] 7.2 Add explicit scenario review for artifact writes, task mutations,
+- [x] 7.2 Add explicit scenario review for artifact writes, task mutations,
   notes, archives, validation errors, and failed-write integrity regardless of
   aggregate coverage
-- [ ] 7.3 Split CI into stable `quality` checks for Node.js 20 and 22 that run
+- [x] 7.3 Split CI into stable `quality` checks for Node.js 20 and 22 that run
   install, typecheck, unit/integration tests, coverage, and build
-- [ ] 7.4 Add a stable Chromium browser check with cached tooling and
+- [x] 7.4 Add a stable Chromium browser check with cached tooling and
   non-sensitive diagnostics uploaded only on failure
-- [ ] 7.5 Add stable package-smoke checks on Node.js 20 and 22 using the clean
+- [x] 7.5 Add stable package-smoke checks on Node.js 20 and 22 using the clean
   tarball installation path
-- [ ] 7.6 Validate the fictional fixture and all active OpenSpec changes in CI
+- [x] 7.6 Validate the fictional fixture and all active OpenSpec changes in CI
 - [ ] 7.7 Measure each job duration and keep the required pull-request path
   within the documented target or record an optimization follow-up
 - [ ] 7.8 Verify the displayed GitHub check names and provide them to

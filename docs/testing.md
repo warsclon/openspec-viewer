@@ -11,6 +11,7 @@ OpenSpec data and must never read or mutate a developer's active project.
 | Integration | Filesystem, subprocess, and real HTTP behavior in isolated temporary projects | `npm run test:integration` |
 | Coverage | All current Vitest tests with V8 source coverage | `npm run test:coverage` |
 | Browser | Real static UI in deterministic Chromium | `npm run test:browser` |
+| OpenSpec | Active changes and the representative fixture | `npm run test:openspec` |
 | Package | Packed, clean-installed `openspec-viewer` executable | `npm run test:package` |
 
 Run the complete Vitest suite with `npm test` and use `npm run test:watch`
@@ -67,10 +68,36 @@ evidence.
 text, JSON, and HTML reports to the ignored `coverage/` directory. Vitest and
 `@vitest/coverage-v8` must always use the same major version.
 
-The completed `establish-test-foundation` change will enforce at least
-80 percent statements, lines, and functions and 70 percent branches. Aggregate
-coverage never replaces explicit scenarios for artifact writes, task
-mutations, notes, archives, validation errors, and failed-write integrity.
+The suite enforces at least 80 percent statements, lines, and functions and
+70 percent branches. Aggregate coverage never replaces explicit scenarios for
+artifact writes, task mutations, notes, archives, validation errors, and
+failed-write integrity.
+
+## Critical scenario review
+
+| Required behavior | Primary evidence |
+| --- | --- |
+| Artifact writes and unchanged targets after rejection | `test/integration/artifact-mutations.test.ts`, `test/integration/http-mutations.test.ts` |
+| Structured and raw task mutations | `test/tasks.test.ts`, `test/integration/http-mutations.test.ts`, `test/browser/workspace.spec.ts` |
+| Local note isolation and persistence | `test/integration/notes.test.ts`, `test/browser/workspace.spec.ts` |
+| Archive success, rejection, and failure integrity | `test/integration/change-lifecycle.test.ts`, `test/integration/http-lifecycle.test.ts`, `test/browser/workspace.spec.ts` |
+| Stable validation errors | `test/integration/http-errors.test.ts`, `test/integration/artifact-mutations.test.ts` |
+| Failed-write and publication integrity | `test/integration/change-lifecycle.test.ts`, `test/integration/artifact-mutations.test.ts` |
+
+Review this table whenever one of these public seams changes. A passing global
+percentage does not permit deleting the corresponding scenario evidence.
+
+## Continuous integration
+
+Pull requests run five stable checks in parallel:
+
+- `quality (Node 20)` and `quality (Node 22)`.
+- `browser (Chromium)`.
+- `package smoke (Node 20)` and `package smoke (Node 22)`.
+
+The required pull-request path targets completion within 10 minutes. Browser
+traces and screenshots are uploaded only when that job fails, use only the
+fictional fixture, and expire after seven days.
 
 The 2026-07-25 pre-expansion baseline used the original four test files and
 eleven tests:
