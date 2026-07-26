@@ -8,11 +8,9 @@ account identifiers, or private advisory details.
 
 ## Rollout state
 
-The repository intentionally remains private while the hardening work is being
-implemented. Controls that GitHub exposes only to public repositories or paid
-private repositories remain pending until the final visibility transition.
-Making the repository public is a separate, explicit maintainer action; it is
-not performed by the audit procedure.
+The maintainer changed the repository visibility to public on 2026-07-26 after
+the file-backed hardening reached `main`. Public-only controls are now being
+verified before the default-branch ruleset is enforced.
 
 Baseline captured on 2026-07-26:
 
@@ -47,6 +45,25 @@ Controls enabled and re-queried during the private implementation on
   updates as configured and linked to the merged configuration. The file-backed
   npm and GitHub Actions entries had already passed local YAML parsing.
 
+Controls enabled and re-queried after the public transition on 2026-07-26:
+
+- Secret scanning and contributor push protection reported `enabled`.
+- The secret-scanning alerts endpoint was available and returned no alerts.
+  Public repositories receive GitHub's free automatic secret scanning. The
+  Advanced Security scan-history endpoint is not available for this repository,
+  so its backfill status cannot be queried separately; the independent Gitleaks
+  scan covers the complete reachable Git history.
+- Non-provider patterns and validity checks remained unavailable on the current
+  repository plan and reported `disabled`. Provider-pattern scanning and push
+  protection remain enabled.
+- Private vulnerability reporting reported `enabled`, and both
+  `SECURITY.md` and the issue-template configuration route security reports to
+  GitHub's private advisory form.
+- CodeQL default setup reported `configured` for JavaScript and TypeScript with
+  the default query suite. Its initial
+  [`Analyze (javascript-typescript)` run](https://github.com/warsclon/openspec-viewer/actions/runs/30199874279)
+  completed successfully.
+
 File-backed validation on 2026-07-26 completed with zero npm audit
 vulnerabilities, a clean typecheck, 106 passing Vitest tests, a successful
 build, successful CLI help and version smoke checks, and valid repository plus
@@ -71,9 +88,13 @@ The five stable CI check names observed before ruleset configuration are:
 - `package smoke (Node 20)`
 - `package smoke (Node 22)`
 
-The security check names must be copied from successful GitHub runs after
-CodeQL and dependency review are enabled. Never reconstruct a required-check
-name from a workflow filename.
+The initial CodeQL security check name is:
+
+- `Analyze (javascript-typescript)`
+
+The dependency-review check name will be copied from a successful public pull
+request before the ruleset is created. Never reconstruct a required-check name
+from a workflow filename.
 
 ## Access and integration inventory
 
@@ -88,8 +109,8 @@ Inventory captured through the GitHub API on 2026-07-26:
 | Actions secrets | None | Keep ordinary CI secret-free |
 | Actions variables | None | Add only a documented, non-sensitive value when required |
 | Environments | None | Create a protected release environment only with an approved release design |
-| GitHub Apps | API inventory unavailable to the current OAuth token | Review manually before public launch |
-| OAuth integrations | No repository-scoped API inventory is available | Review the maintainer account authorization page before public launch |
+| GitHub Apps | Manual account review found nine installations with all-repository access; no installation IDs were recorded | Reduce each installation to the repositories required for its current purpose |
+| OAuth integrations | No repository-scoped API inventory is available | Complete the maintainer account authorization review and remove stale grants |
 
 Do not retain an identity or integration without a current owner, purpose, and
 minimum required permission. A future release environment must isolate package
@@ -125,10 +146,8 @@ Major-update backlog decisions completed on 2026-07-26:
 The dependency-review workflow rejects newly introduced vulnerabilities of
 moderate, high, or critical severity in runtime or development dependencies. It
 uses only `contents: read`, does not check out pull-request code, and does not
-receive repository secrets. The job is skipped while the repository is
-intentionally private because GitHub does not provide dependency review on the
-current private-repository plan; the same workflow begins enforcing the policy
-automatically when the repository becomes public.
+receive repository secrets. The job was skipped while the repository was
+private and now enforces the policy on public-repository pull requests.
 
 ## Workflow policy
 
