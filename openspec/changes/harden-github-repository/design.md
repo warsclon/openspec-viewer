@@ -66,6 +66,10 @@ evidence for the current `main`.
 | #4 | TypeScript 5 to 7 | Reject because the current PR fails typecheck and needs an intentional migration |
 | #5 | Vitest 3 to 4 | Evaluate and, if compatible, supersede through `establish-test-foundation` with matching `@vitest/coverage-v8` |
 
+Pull request #13 merged the reviewed Actions replacements on 2026-07-26.
+Dependabot pull requests #1 and #2 were then closed as superseded with comments
+linking the exact replacement SHAs and current-base CI evidence.
+
 The Actions upgrades are useful because v7 contains dependency and
 pull-request safety improvements and removes the deprecated action runtime
 warning. They will not be merged as mutable `@v7` references. The replacement

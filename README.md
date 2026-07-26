@@ -121,7 +121,7 @@ JSON API responses use these status classes:
 ## Development
 
 ```bash
-npm install
+npm ci
 npm run typecheck
 npm test
 npm run build
@@ -136,7 +136,9 @@ npm run build
 | `npm run test:integration` | Run filesystem and HTTP integration tests |
 | `npm run test:coverage` | Run Node-source coverage with V8 |
 | `npm run test:browser` | Run critical UI journeys in deterministic Chromium |
+| `npm run test:openspec` | Strictly validate active changes and the fictional fixture |
 | `npm run test:package` | Pack, clean-install, and smoke-test the published CLI |
+| `npm run prepublishOnly` | Run the complete package validation gate |
 | `npm run typecheck` | `tsc --noEmit` |
 
 ## Project layout

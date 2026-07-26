@@ -28,10 +28,11 @@ typecheck, the default test projects, and `test:package`. The package test
 rebuilds the package, creates a tarball, installs it offline in a clean
 temporary directory, and invokes only the installed executable.
 
-Run `npm run test:browser` after browser UI or end-to-end workflow changes.
-Playwright uses deterministic Chromium settings, creates one isolated fictional
-project per test, blocks external requests, and retains traces and screenshots
-only when a test fails.
+Install the test browser once with `npx playwright install chromium`, then run
+`npm run test:browser` after browser UI or end-to-end workflow changes.
+Playwright uses deterministic Chromium settings, creates one isolated
+fictional project per test, blocks external requests, and retains traces and
+screenshots only when a test fails.
 
 ## Fixture policy
 
@@ -111,6 +112,30 @@ Pull request #13 established the first live baseline on 2026-07-26:
 
 All jobs ran in parallel. The observed required path was 57 seconds, well
 within the 10-minute target.
+
+## Foundation closeout evidence
+
+The test-foundation closeout validation ran on 2026-07-26 with these additional
+checks:
+
+- Three complete Vitest runs passed with shuffled file and test ordering using
+  seeds `20260726`, `8675309`, and `424242`.
+- A clean clone of `main` completed `npm ci`, `npm run prepublishOnly`,
+  `npm run test:coverage`, `npm run test:browser`, and
+  `npm run test:openspec`.
+- The clean-clone `PATH` intentionally excluded any globally installed
+  `openspec` executable; validation succeeded through the exact development
+  dependency in the lockfile.
+- The clean-clone run reproduced 106 Vitest tests, four installed-package smoke
+  tests, six Chromium journeys, and final coverage of 88.36% statements,
+  77.93% branches, 92.39% functions, and 89.63% lines.
+- Server and watcher lifecycle assertions passed in every shuffled and
+  clean-clone run. Test-owned servers, watchers, browser processes, temporary
+  projects, package installations, tarballs, reports, coverage, and traces were
+  absent after cleanup.
+- `git status --short` returned no paths in the clean clone after validation and
+  cleanup. A pre-existing user-launched `openspec-viewer` process was identified
+  by its earlier start time and left untouched.
 
 The 2026-07-25 pre-expansion baseline used the original four test files and
 eleven tests:
