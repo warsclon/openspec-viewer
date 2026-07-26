@@ -291,6 +291,8 @@ Public enforcement evidence captured on 2026-07-26:
   `Analyze (javascript-typescript)`, `CodeQL`, and `dependency review`.
   Chromium failed once on a focus assertion, then passed on rerun; the focused
   test also passed 13 consecutive local repetitions.
+- Pull request #18 was merged by squash through the normal protected path after
+  GitHub reported `mergeStateStatus: CLEAN`. No administrative bypass was used.
 - The active
   [`Protect main` ruleset](https://github.com/warsclon/openspec-viewer/rules/19763687)
   targets the default branch, requires the eight observed contexts and an
@@ -305,6 +307,15 @@ Public enforcement evidence captured on 2026-07-26:
   deliberately failed `quality (Node 20)` and `quality (Node 22)`. GitHub
   reported `mergeStateStatus: BLOCKED`; the pull request was closed without
   merge and its branch was deleted.
+- A disposable branch used the redacted Adafruit placeholder shown in GitHub's
+  REST documentation. GitHub correctly treated that placeholder as example text
+  rather than a detectable credential, so the push was not blocked. The remote
+  and local branches were deleted immediately. This is not accepted as
+  behavioral proof of push protection, and no real or plausibly valid
+  credential will be created to force a detection.
+- The repository-level delegated bypass-request endpoint returned `404` on the
+  current plan. Push-protection alerts remain queryable, but delegated bypass
+  requests are recorded as unavailable rather than enabled.
 
 Remaining closeout steps:
 

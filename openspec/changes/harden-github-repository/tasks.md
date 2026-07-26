@@ -108,7 +108,7 @@
   workflows, GitHub Apps, and ordinary collaborators cannot use it
 - [x] 5.8 Attempt a harmless direct update to `main` and a pull request with a
   deliberately failing check, confirming GitHub blocks both paths
-- [ ] 5.9 Merge a fully green representative pull request through the normal
+- [x] 5.9 Merge a fully green representative pull request through the normal
   path and confirm the ruleset permits it without using the bypass
 
 ## 6. Access and Integration Audit
