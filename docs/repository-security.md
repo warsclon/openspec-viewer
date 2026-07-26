@@ -92,9 +92,12 @@ The initial CodeQL security check name is:
 
 - `Analyze (javascript-typescript)`
 
-The dependency-review check name will be copied from a successful public pull
-request before the ruleset is created. Never reconstruct a required-check name
-from a workflow filename.
+Public pull request #18 registered and passed the final security contexts:
+
+- `CodeQL`
+- `dependency review`
+
+Never reconstruct a required-check name from a workflow filename.
 
 ## Access and integration inventory
 
@@ -278,6 +281,29 @@ the repository visibility and plan limitation. It must not be converted into an
 enabled or passing status.
 
 ## Enforcement verification
+
+Public enforcement evidence captured on 2026-07-26:
+
+- [Pull request #18](https://github.com/warsclon/openspec-viewer/pull/18)
+  passed `quality (Node 20)`, `quality (Node 22)`, `browser (Chromium)`,
+  `package smoke (Node 20)`, `package smoke (Node 22)`,
+  `Analyze (javascript-typescript)`, `CodeQL`, and `dependency review`.
+  Chromium failed once on a focus assertion, then passed on rerun; the focused
+  test also passed 13 consecutive local repetitions.
+- The active
+  [`Protect main` ruleset](https://github.com/warsclon/openspec-viewer/rules/19763687)
+  targets the default branch, requires the eight observed contexts and an
+  up-to-date pull request, requires resolved review conversations, allows zero
+  approvals for the single-maintainer model, and requires linear history.
+- The ruleset rejects deletion and non-fast-forward updates. Its only bypass is
+  the repository owner, is available only through a pull request, and is
+  reserved for the documented recovery procedure.
+- A direct push of the already reviewed documentation commit to `main` was
+  rejected with `GH013` because changes must be made through a pull request.
+- Temporary [pull request #19](https://github.com/warsclon/openspec-viewer/pull/19)
+  deliberately failed `quality (Node 20)` and `quality (Node 22)`. GitHub
+  reported `mergeStateStatus: BLOCKED`; the pull request was closed without
+  merge and its branch was deleted.
 
 After the repository becomes public:
 

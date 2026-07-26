@@ -87,26 +87,26 @@
   GitHub Actions cannot create or approve pull-request reviews
 - [x] 4.8 Verify pull-request workflows do not use `pull_request_target`, expose
   repository secrets, or grant write permissions to code from forks
-- [ ] 4.9 Run CI, CodeQL, and dependency review on a representative pull request
+- [x] 4.9 Run CI, CodeQL, and dependency review on a representative pull request
   and retain links to the successful checks in the security checklist
 
 ## 5. Default-Branch Ruleset
 
-- [ ] 5.1 Create an active ruleset targeting the repository default branch
-- [ ] 5.2 Require changes to reach `main` through a pull request and require all
+- [x] 5.1 Create an active ruleset targeting the repository default branch
+- [x] 5.2 Require changes to reach `main` through a pull request and require all
   review conversations to be resolved
-- [ ] 5.3 Set required approvals to zero for the current single-maintainer model
+- [x] 5.3 Set required approvals to zero for the current single-maintainer model
   and record the trigger for raising it to one when a second active maintainer
   exists
-- [ ] 5.4 Require the observed Node.js 20, Node.js 22, and CodeQL status checks,
+- [x] 5.4 Require the observed Node.js 20, Node.js 22, and CodeQL status checks,
   plus dependency review when GitHub exposes it as an always-applicable check
-- [ ] 5.5 Require branches to be up to date before merge and enable linear
+- [x] 5.5 Require branches to be up to date before merge and enable linear
   history if it remains compatible with the selected merge strategies
-- [ ] 5.6 Block branch deletion and non-fast-forward updates, including force
+- [x] 5.6 Block branch deletion and non-fast-forward updates, including force
   pushes
-- [ ] 5.7 Configure only the documented maintainer recovery bypass and confirm
+- [x] 5.7 Configure only the documented maintainer recovery bypass and confirm
   workflows, GitHub Apps, and ordinary collaborators cannot use it
-- [ ] 5.8 Attempt a harmless direct update to `main` and a pull request with a
+- [x] 5.8 Attempt a harmless direct update to `main` and a pull request with a
   deliberately failing check, confirming GitHub blocks both paths
 - [ ] 5.9 Merge a fully green representative pull request through the normal
   path and confirm the ruleset permits it without using the bypass
