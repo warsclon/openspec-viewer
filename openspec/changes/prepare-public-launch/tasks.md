@@ -19,7 +19,7 @@
 
 ## 3. Public-Seam Verification
 
-- [ ] 3.1 Complete and archive `establish-test-foundation` before relying on CI
+- [x] 3.1 Complete and archive `establish-test-foundation` before relying on CI
   as a public-launch or repository-ruleset gate
 - [ ] 3.2 Extend the shared deterministic fixture and browser harness only with
   launch-specific demo, hosted read-only, and media-capture scenarios
@@ -56,14 +56,15 @@
 
 ## 6. Repository Trust and Security
 
-- [ ] 6.1 Enable secret scanning, non-provider patterns, validity checks, and push protection where GitHub supports them
-- [ ] 6.2 Enable dependency vulnerability alerts and Dependabot security updates and verify the private reporting channel
-- [ ] 6.3 Enable CodeQL default setup or an equivalent TypeScript analysis and make its required status visible
-- [ ] 6.4 Pin third-party workflow actions to reviewed commit digests and keep automated update metadata readable
-- [ ] 6.5 Create a `main` ruleset that requires CI, blocks deletion and force pushes, and documents the emergency maintainer bypass
-- [ ] 6.6 Verify workflow permissions remain read-only by default and grant write or identity permissions only to release jobs
-- [ ] 6.7 Add a repeatable repository-settings audit that reports metadata, ruleset, scanning, Pages, and release configuration
-- [ ] 6.8 Confirm a clean external clone contains no secrets, local notes, generated build noise, or non-public fixture data
+- [ ] 6.1 Complete and archive `harden-github-repository` as the source of truth
+  for dependency, secret, workflow, access, and default-branch controls
+- [ ] 6.2 Re-run its versioned repository-security audit after the repository
+  becomes public and retain launch-specific Pages and release configuration
+  evidence
+- [ ] 6.3 Verify release workflows add write or identity permissions only at a
+  separately reviewed publishing job and protected environment boundary
+- [ ] 6.4 Confirm the inherited clean-clone security evidence remains valid
+  after adding demo, media, hosted-site, and release assets
 
 ## 7. Contributor Experience
 
