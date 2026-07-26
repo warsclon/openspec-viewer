@@ -240,6 +240,10 @@ The exact displayed GitHub check names will be verified before
 `harden-github-repository` configures the ruleset. Browser diagnostics are
 uploaded only on failure and contain fictional fixture data.
 
+All required pull-request checks run in parallel and target completion within
+10 minutes. A slower required path must be optimized or recorded as an explicit
+follow-up before repository rules depend on it.
+
 When these jobs replace the current CI workflow, they will also supersede
 Dependabot PRs #1 and #2 by using the reviewed current v7 commits for
 `actions/checkout` and `actions/setup-node`, pinned to full SHAs with version

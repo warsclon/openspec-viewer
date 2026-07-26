@@ -99,7 +99,7 @@
   exclusions
 - [x] 5.4 Install the tarball into a clean temporary directory and invoke only
   its installed `openspec-viewer` binary
-- [ ] 5.5 Verify installed `--help`, `--version`, invalid input, project start,
+- [x] 5.5 Verify installed `--help`, `--version`, invalid input, project start,
   health response, and clean termination on Node.js 20 and 22
 - [x] 5.6 Confirm package smoke never imports source files, local `node_modules`,
   or unlisted repository assets
@@ -127,21 +127,21 @@
 
 ## 7. Coverage and CI Gates
 
-- [ ] 7.1 Configure Node-source coverage thresholds at 80 percent statements,
+- [x] 7.1 Configure Node-source coverage thresholds at 80 percent statements,
   lines, and functions and 70 percent branches
-- [ ] 7.2 Add explicit scenario review for artifact writes, task mutations,
+- [x] 7.2 Add explicit scenario review for artifact writes, task mutations,
   notes, archives, validation errors, and failed-write integrity regardless of
   aggregate coverage
-- [ ] 7.3 Split CI into stable `quality` checks for Node.js 20 and 22 that run
+- [x] 7.3 Split CI into stable `quality` checks for Node.js 20 and 22 that run
   install, typecheck, unit/integration tests, coverage, and build
-- [ ] 7.4 Add a stable Chromium browser check with cached tooling and
+- [x] 7.4 Add a stable Chromium browser check with cached tooling and
   non-sensitive diagnostics uploaded only on failure
-- [ ] 7.5 Add stable package-smoke checks on Node.js 20 and 22 using the clean
+- [x] 7.5 Add stable package-smoke checks on Node.js 20 and 22 using the clean
   tarball installation path
-- [ ] 7.6 Validate the fictional fixture and all active OpenSpec changes in CI
-- [ ] 7.7 Measure each job duration and keep the required pull-request path
+- [x] 7.6 Validate the fictional fixture and all active OpenSpec changes in CI
+- [x] 7.7 Measure each job duration and keep the required pull-request path
   within the documented target or record an optimization follow-up
-- [ ] 7.8 Verify the displayed GitHub check names and provide them to
+- [x] 7.8 Verify the displayed GitHub check names and provide them to
   `harden-github-repository` before its `main` ruleset is enabled
 - [ ] 7.9 Replace the mutable `actions/checkout@v4` and
   `actions/setup-node@v4` references with reviewed current v7 commit SHAs and

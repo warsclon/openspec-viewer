@@ -105,6 +105,19 @@ and 22 CI jobs, successful CodeQL analysis, dependency review when applicable,
 and resolved review conversations. It will require a current branch before
 merge and block deletion and non-fast-forward updates.
 
+Pull request #13 produced the following successful check names on 2026-07-26;
+these exact strings are the test-foundation candidates for the `main` ruleset:
+
+- `quality (Node 20)`
+- `quality (Node 22)`
+- `browser (Chromium)`
+- `package smoke (Node 20)`
+- `package smoke (Node 22)`
+
+The same run completed its slowest check in 57 seconds. Ruleset configuration
+must select these observed names rather than reconstructing names from workflow
+or job identifiers.
+
 The initial approval count will be zero because the repository currently has
 one maintainer. This still prevents direct pushes and lets the maintainer review
 the complete pull-request diff and checks before merging. The approval
