@@ -95,6 +95,10 @@ review. This avoids adding runtime dependencies or long-lived service tokens.
 Additional scanners can be proposed later if the native controls leave a
 demonstrated gap.
 
+Dependency review fails when a pull request introduces a runtime or development
+dependency vulnerability of moderate, high, or critical severity. The workflow
+does not check out pull-request code and uses only `contents: read`.
+
 ### 5. Pin every reusable action to a reviewed commit
 
 Workflow action references will use full commit digests with a trailing release
@@ -151,6 +155,10 @@ created.
 
 1. Capture the current settings, open dependency PRs, and successful CI check
    names.
+   The 2026-07-26 implementation baseline confirmed that the repository remains
+   intentionally private until hardening is complete. Public-only or paid
+   private-repository controls are therefore configured after the explicit
+   visibility transition, not treated as implementation failures.
 2. Complete the test-foundation compatibility decision for Vitest 4.
 3. Update Dependabot, replace Actions with pinned v7 digests, and resolve PRs
    #1 through #5.

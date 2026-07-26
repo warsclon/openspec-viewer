@@ -4,10 +4,40 @@ updates:
     directory: /
     schedule:
       interval: monthly
+      time: "06:00"
+      timezone: Europe/Madrid
     open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - javascript
+    groups:
+      development-minor-and-patch:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+    ignore:
+      - dependency-name: "@types/node"
+        update-types:
+          - version-update:semver-major
+      - dependency-name: typescript
+        update-types:
+          - version-update:semver-major
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
+      time: "06:00"
+      timezone: Europe/Madrid
     open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - github_actions
+    groups:
+      actions-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
