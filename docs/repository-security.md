@@ -10,8 +10,10 @@ account identifiers, or private advisory details.
 
 The maintainer changed the repository visibility to public on 2026-07-26 after
 the file-backed hardening reached `main`. The default-branch ruleset is active
-and its negative controls have been verified; final push-protection, integration
-access, green-merge, and closeout verification remain pending.
+and its positive and negative controls have been verified. Repository security
+settings and safe push-protection evidence have completed their final review.
+Integration least-privilege remediation and the versioned closeout remain
+pending.
 
 Baseline captured on 2026-07-26:
 
@@ -113,13 +115,20 @@ Inventory captured through the GitHub API on 2026-07-26:
 | Actions secrets | None | Keep ordinary CI secret-free |
 | Actions variables | None | Add only a documented, non-sensitive value when required |
 | Environments | None | Create a protected release environment only with an approved release design |
-| GitHub Apps | Manual account review found nine installations with all-repository access; no installation IDs were recorded | Reduce each installation to the repositories required for its current purpose |
-| OAuth integrations | No repository-scoped API inventory is available | Complete the maintainer account authorization review and remove stale grants |
+| GitHub Apps | Manual review in progress; detailed account inventory is not public repository data | Complete least-privilege remediation before closeout |
+| OAuth integrations | No repository-scoped API inventory is available | Complete and retain a private account-level purpose and scope review |
 
 Do not retain an identity or integration without a current owner, purpose, and
 minimum required permission. A future release environment must isolate package
 publication authority from ordinary CI and must use trusted publishing rather
 than a long-lived npm token.
+
+The repository maintainer is the accountable owner for retained integrations.
+Integration least-privilege remediation remains pending and its
+permission-by-permission inventory is retained privately. OAuth token values,
+application identifiers, unrelated private repository names, installation
+identifiers, and the detailed account inventory must not be recorded in this
+public repository.
 
 ## Dependency update policy
 
@@ -310,22 +319,37 @@ Public enforcement evidence captured on 2026-07-26:
 - A disposable branch used the redacted Adafruit placeholder shown in GitHub's
   REST documentation. GitHub correctly treated that placeholder as example text
   rather than a detectable credential, so the push was not blocked. The remote
-  and local branches were deleted immediately. This is not accepted as
-  behavioral proof of push protection, and no real or plausibly valid
-  credential will be created to force a detection.
+  and local branches were deleted immediately. This completes the approved safe
+  test procedure but is not behavioral proof that a live credential would be
+  blocked. No real or plausibly valid credential will be created to force a
+  detection; repeat the test only if GitHub publishes a harmless
+  detector-triggering value.
 - The repository-level delegated bypass-request endpoint returned `404` on the
   current plan. Push-protection alerts remain queryable, but delegated bypass
   requests are recorded as unavailable rather than enabled.
 
+Final re-query completed on 2026-07-26:
+
+- Dependency alerts and security updates were enabled and unpaused.
+- The dependency graph returned an SPDX 2.3 SBOM with 215 packages.
+- Secret scanning and push protection were enabled with zero reported alerts.
+- Non-provider patterns, validity checks, scan-history details, and delegated
+  bypass requests remained unavailable on the current plan.
+- CodeQL default setup remained configured for JavaScript and TypeScript.
+- Actions remained restricted to GitHub-owned actions, with a read-only default
+  token that cannot approve pull-request reviews. Repository policy separately
+  requires every reusable action reference to use a reviewed full commit SHA.
+- Private vulnerability reporting remained enabled.
+- `Protect main` remained active with the eight required checks and the
+  documented pull-request-only owner recovery bypass.
+
 Remaining closeout steps:
 
-1. Verify the fully green representative pull request can merge normally.
-2. Test push protection only with GitHub's documented harmless test value on a
-   disposable branch, then remove the local commit and branch.
-3. Reduce installed GitHub App and OAuth access to the repositories required
-   for each current purpose.
-4. Re-query every externally managed control and update this document with the
-   final result.
+1. Complete the private integration least-privilege remediation and OAuth
+   purpose and scope inventory.
+2. Merge pull request #20 through the protected path.
+3. Archive `harden-github-repository` so its specification is synchronized into
+   `openspec/specs/`.
 
 The final verification section must record the date, result, and non-sensitive
 evidence URL for every control before this OpenSpec change is archived.

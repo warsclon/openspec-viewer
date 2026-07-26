@@ -151,6 +151,14 @@ push protection will be tested only with a GitHub-documented harmless test
 value in a disposable branch; no real or plausibly valid credential will be
 created.
 
+GitHub's redacted documentation placeholders are intentionally safe and may not
+match a live detector. If the documented placeholder is accepted by GitHub, the
+verification records the result as inconclusive, removes every local and remote
+test ref, and does not escalate to a real or plausibly valid credential. API
+state, the alerts endpoint, and the supported-pattern inventory remain the safe
+activation evidence. Repeat the behavioral test only if GitHub publishes a
+harmless value designed to trigger a supported detector.
+
 ## Rollout Order
 
 1. Capture the current settings, open dependency PRs, and successful CI check
