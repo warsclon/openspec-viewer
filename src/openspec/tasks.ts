@@ -73,13 +73,13 @@ export function parseTasksMarkdown(raw: string): ParsedTasks {
     tasks.push(item);
   }
 
-  if (current.tasks.length > 0 || sections.length === 0) {
+  if (current.tasks.length > 0 || sawHeading || sections.length === 0) {
     sections.push(current);
   }
 
   const completed = tasks.filter((t) => t.done).length;
   return {
-    sections: sections.filter((s) => s.tasks.length > 0 || sections.length === 1),
+    sections,
     tasks,
     completed,
     total: tasks.length,

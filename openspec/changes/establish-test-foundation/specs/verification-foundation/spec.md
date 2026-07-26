@@ -142,6 +142,20 @@ access using observable user-facing state.
 - **THEN** the UI confirms the result and a fresh page load observes the
   persisted value
 
+#### Scenario: A user adds an empty task section
+
+- **WHEN** the browser adds a named section before adding its first task
+- **THEN** the section remains visible, is preserved in `tasks.md`, and can be
+  renamed or deleted through the structured task editor
+
+#### Scenario: An external update arrives during a local edit
+
+- **WHEN** another local client changes an artifact while the browser contains
+  unsaved editor content
+- **THEN** the browser preserves the unsaved value, reports that changes are
+  pending, and applies the external update after the local value is saved or
+  reverted
+
 #### Scenario: A user operates by keyboard
 
 - **WHEN** the user navigates primary controls, opens search, selects a result,

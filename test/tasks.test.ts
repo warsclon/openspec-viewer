@@ -71,6 +71,24 @@ describe("serializeTasksMarkdown", () => {
     expect(again.tasks.map((t) => t.id)).toEqual(["1.1", "1.2", "2.1"]);
     expect(raw).toContain("- [x] 1.2 Add config");
   });
+
+  it("round-trips an explicitly empty section", () => {
+    const raw = serializeTasksMarkdown([
+      {
+        title: "1. Work",
+        tasks: [{ id: "1.1", text: "Implement", done: false }],
+      },
+      {
+        title: "2. Follow-up",
+        tasks: [],
+      },
+    ]);
+
+    expect(parseTasksMarkdown(raw).sections).toEqual([
+      expect.objectContaining({ title: "1. Work" }),
+      { title: "2. Follow-up", tasks: [] },
+    ]);
+  });
 });
 
 describe("toggleTaskInMarkdown", () => {

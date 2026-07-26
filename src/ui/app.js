@@ -22,11 +22,39 @@ const state = {
   searchHits: [],
   searchIndex: 0,
   searchTimer: null,
+  searchReturnFocus: null,
   reloadTimer: null,
   selfWriteUntil: 0,
+  dirtyEditors: new Set(),
+  pendingReload: false,
+  reloadGeneration: 0,
 };
 
 const $ = (sel) => document.querySelector(sel);
+
+function hasDirtyEditors() {
+  return state.dirtyEditors.size > 0;
+}
+
+function setEditorDirty(key, dirty) {
+  if (dirty) {
+    state.dirtyEditors.add(key);
+  } else {
+    state.dirtyEditors.delete(key);
+    if (!hasDirtyEditors() && state.pendingReload) {
+      schedulePendingReload();
+    }
+  }
+}
+
+function clearDirtyEditors(prefix) {
+  for (const key of state.dirtyEditors) {
+    if (key.startsWith(prefix)) state.dirtyEditors.delete(key);
+  }
+  if (!hasDirtyEditors() && state.pendingReload) {
+    schedulePendingReload();
+  }
+}
 
 function readPref(key, fallback) {
   try {
@@ -95,7 +123,7 @@ function toast(msg, type = "ok") {
 }
 
 async function api(path, options) {
-  if (options?.method === "POST" && String(path).includes("/tasks/toggle")) {
+  if (["POST", "PUT", "PATCH", "DELETE"].includes(options?.method)) {
     state.selfWriteUntil = Date.now() + 1200;
   }
   const res = await fetch(path, {
@@ -317,6 +345,9 @@ async function mutateTasks(action) {
     method: "POST",
     body: JSON.stringify(action),
   });
+  clearDirtyEditors("task:");
+  clearDirtyEditors("section:");
+  clearDirtyEditors("add-task:");
   applyTasksResult(result);
   renderTasks(state.detail);
   refreshViews();
@@ -365,16 +396,16 @@ function renderTasks(detail) {
               </label>`;
             }
             return `<div class="task editable ${t.done ? "done" : ""}" data-task-id="${escapeHtml(t.id)}">
-              <input type="checkbox" ${t.done ? "checked" : ""} data-act="toggle" data-task-id="${escapeHtml(t.id)}" />
+              <input type="checkbox" ${t.done ? "checked" : ""} data-act="toggle" data-task-id="${escapeHtml(t.id)}" aria-label="Mark task ${escapeHtml(t.id)} complete" />
               <div class="task-edit-body">
                 <div class="task-edit-row">
-                  <input class="task-id-input" value="${escapeHtml(t.id)}" data-field="id" data-task-id="${escapeHtml(t.id)}" />
-                  <input class="task-text-input" value="${escapeHtml(t.text)}" data-field="text" data-task-id="${escapeHtml(t.id)}" />
+                  <input class="task-id-input" value="${escapeHtml(t.id)}" data-field="id" data-task-id="${escapeHtml(t.id)}" aria-label="Task ${escapeHtml(t.id)} ID" />
+                  <input class="task-text-input" value="${escapeHtml(t.text)}" data-field="text" data-task-id="${escapeHtml(t.id)}" aria-label="Task ${escapeHtml(t.id)} text" />
                 </div>
                 <div class="task-edit-actions">
-                  <button type="button" class="icon-btn" data-act="up" data-task-id="${escapeHtml(t.id)}">↑</button>
-                  <button type="button" class="icon-btn" data-act="down" data-task-id="${escapeHtml(t.id)}">↓</button>
-                  <button type="button" class="icon-btn danger" data-act="delete" data-task-id="${escapeHtml(t.id)}">✕</button>
+                  <button type="button" class="icon-btn" data-act="up" data-task-id="${escapeHtml(t.id)}" aria-label="Move task ${escapeHtml(t.id)} up">↑</button>
+                  <button type="button" class="icon-btn" data-act="down" data-task-id="${escapeHtml(t.id)}" aria-label="Move task ${escapeHtml(t.id)} down">↓</button>
+                  <button type="button" class="icon-btn danger" data-act="delete" data-task-id="${escapeHtml(t.id)}" aria-label="Delete task ${escapeHtml(t.id)}">✕</button>
                 </div>
               </div>
             </div>`;
@@ -386,8 +417,8 @@ function renderTasks(detail) {
             ${
               readonly
                 ? `<h3>${escapeHtml(sec.title)}</h3>`
-                : `<input class="section-title-input" value="${escapeHtml(sec.title)}" data-act="rename-section" data-si="${si}" />
-                   <button type="button" class="icon-btn danger" data-act="delete-section" data-si="${si}">✕</button>`
+                : `<input class="section-title-input" value="${escapeHtml(sec.title)}" data-act="rename-section" data-si="${si}" aria-label="Section ${si + 1} title" />
+                   <button type="button" class="icon-btn danger" data-act="delete-section" data-si="${si}" aria-label="Delete section ${si + 1}">✕</button>`
             }
           </div>
           ${tasksHtml || `<p class="muted empty-tasks">No tasks</p>`}
@@ -395,7 +426,7 @@ function renderTasks(detail) {
             readonly
               ? ""
               : `<div class="add-task-row">
-                  <input type="text" class="add-task-input" placeholder="New task…" data-si="${si}" />
+                  <input type="text" class="add-task-input" placeholder="New task…" data-si="${si}" aria-label="New task for ${escapeHtml(sec.title)}" />
                   <button type="button" class="btn" data-act="add-task" data-si="${si}">Add</button>
                 </div>`
           }
@@ -434,6 +465,10 @@ function bindTasksEditor(panel) {
   });
 
   panel.querySelectorAll(".add-task-input").forEach((input) => {
+    const dirtyKey = `add-task:${input.dataset.si}`;
+    input.addEventListener("input", () => {
+      setEditorDirty(dirtyKey, Boolean(input.value.trim()));
+    });
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
@@ -477,10 +512,16 @@ function bindTasksEditor(panel) {
   };
 
   panel.querySelectorAll(".task-text-input, .task-id-input").forEach((el) => {
+    const dirtyKey = `task:${el.dataset.taskId}:${el.dataset.field}`;
+    const originalValue = el.value;
+    el.addEventListener("input", () => {
+      setEditorDirty(dirtyKey, el.value !== originalValue);
+    });
     el.addEventListener("change", async () => {
       try {
         await commitField(el);
       } catch (err) {
+        setEditorDirty(dirtyKey, false);
         toast(err.message, "error");
         renderTasks(state.detail);
       }
@@ -504,6 +545,11 @@ function bindTasksEditor(panel) {
   });
 
   panel.querySelectorAll('[data-act="rename-section"]').forEach((el) => {
+    const dirtyKey = `section:${el.dataset.si}`;
+    const originalValue = el.value;
+    el.addEventListener("input", () => {
+      setEditorDirty(dirtyKey, el.value !== originalValue);
+    });
     el.addEventListener("change", async () => {
       try {
         await mutateTasks({
@@ -512,7 +558,9 @@ function bindTasksEditor(panel) {
           title: el.value,
         });
       } catch (err) {
+        setEditorDirty(dirtyKey, false);
         toast(err.message, "error");
+        renderTasks(state.detail);
       }
     });
   });
@@ -542,10 +590,10 @@ function mountEditor(panel, { content, artifact, readonly }) {
           <button type="button" class="chip" data-mode="edit">Edit</button>
           <button type="button" class="chip" data-mode="preview">Preview</button>
         </div>
-        <button type="button" class="btn" data-save>Save</button>
+        <button type="button" class="btn" data-save aria-label="Save ${escapeHtml(artifact)}">Save</button>
       </div>
       <div class="editor-body mode-split">
-        <textarea class="editor-input" spellcheck="false"></textarea>
+        <textarea class="editor-input" spellcheck="false" aria-label="${escapeHtml(artifact)} Markdown"></textarea>
         <div class="md editor-preview"></div>
       </div>
       <p class="muted editor-hint">${
@@ -557,12 +605,17 @@ function mountEditor(panel, { content, artifact, readonly }) {
   const ta = panel.querySelector(".editor-input");
   const preview = panel.querySelector(".editor-preview");
   const body = panel.querySelector(".editor-body");
-  ta.value = content ?? "";
+  let savedContent = content ?? "";
+  const dirtyKey = `artifact:${artifact}`;
+  ta.value = savedContent;
   const refresh = () => {
     preview.innerHTML = mdToHtml(ta.value);
   };
   refresh();
-  ta.addEventListener("input", refresh);
+  ta.addEventListener("input", () => {
+    setEditorDirty(dirtyKey, ta.value !== savedContent);
+    refresh();
+  });
 
   panel.querySelectorAll("[data-mode]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -579,6 +632,8 @@ function mountEditor(panel, { content, artifact, readonly }) {
           method: "PUT",
           body: JSON.stringify({ content: ta.value }),
         });
+        savedContent = res.content;
+        setEditorDirty(dirtyKey, false);
         state.detail.notes = res.content;
         toast("Notes saved locally");
       } else {
@@ -586,6 +641,8 @@ function mountEditor(panel, { content, artifact, readonly }) {
           method: "PUT",
           body: JSON.stringify({ content: ta.value }),
         });
+        savedContent = res.content ?? ta.value;
+        setEditorDirty(dirtyKey, false);
         state.detail[artifact] = res.content ?? ta.value;
         toast(`${artifact}.md saved`);
       }
@@ -686,24 +743,79 @@ function showTab(tab, opts = {}) {
   if (!opts.silent) writeHash();
 }
 
+function setAppInert(inert) {
+  const app = $(".app");
+  if (app) app.inert = inert;
+}
+
+function focusableElements(root) {
+  return Array.from(
+    root.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ),
+  ).filter((element) => {
+    const style = getComputedStyle(element);
+    return !element.hidden && style.display !== "none" && style.visibility !== "hidden";
+  });
+}
+
+function trapModalTab(event, modal) {
+  if (event.key !== "Tab") return;
+  const focusable = focusableElements(modal);
+  if (!focusable.length) {
+    event.preventDefault();
+    return;
+  }
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (focusable.length === 1) {
+    event.preventDefault();
+    first.focus();
+  } else if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
 function showDialog({ title, bodyHtml, okLabel = "OK", danger = false }) {
   return new Promise((resolve) => {
     const modal = $("#dialog-modal");
+    const returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     $("#dialog-title").textContent = title;
     $("#dialog-body").innerHTML = bodyHtml;
     const ok = $("#dialog-ok");
     ok.textContent = okLabel;
     ok.className = danger ? "btn danger" : "btn";
     modal.classList.remove("hidden");
+    setAppInert(true);
 
     const cleanup = (value) => {
       modal.classList.add("hidden");
       ok.onclick = null;
       $("#dialog-cancel").onclick = null;
+      modal.removeEventListener("keydown", onKeydown);
+      setAppInert(false);
+      returnFocus?.focus();
       resolve(value);
+    };
+    const onKeydown = (event) => {
+      if (event.key === "Tab") {
+        trapModalTab(event, modal);
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        cleanup(false);
+      }
     };
     ok.onclick = () => cleanup(true);
     $("#dialog-cancel").onclick = () => cleanup(false);
+    modal.addEventListener("keydown", onKeydown);
+    setTimeout(() => {
+      const firstField = modal.querySelector("input:not([disabled]), textarea:not([disabled])");
+      (firstField || ok).focus();
+    }, 0);
   });
 }
 
@@ -736,7 +848,7 @@ async function promptNewChange() {
     });
     await loadData({ quiet: true });
     await openDetail(created.name);
-    toast(`Change ${created.name} creado`);
+    toast(`Change ${created.name} created`);
   } catch (err) {
     toast(err.message, "error");
   }
@@ -1109,7 +1221,7 @@ function renderGraph() {
         .filter(Boolean)
         .join(" ");
       return `
-        <g class="${cls}" data-id="${escapeHtml(n.id)}" data-spec="${escapeHtml(n.label)}" transform="translate(${p.x},${p.y})">
+        <g class="${cls}" data-id="${escapeHtml(n.id)}" data-spec="${escapeHtml(n.label)}" transform="translate(${p.x},${p.y})" role="button" tabindex="0" aria-label="Focus spec ${escapeHtml(n.label)}">
           <circle r="18"></circle>
           <text class="g-label" x="28" y="5">${escapeHtml(n.label)}</text>
           <text class="g-sub" x="28" y="20">${n.main ? "main" : "delta only"} · ${n.degree}</text>
@@ -1125,7 +1237,7 @@ function renderGraph() {
         .filter(Boolean)
         .join(" ");
       return `
-        <g class="${cls}" data-id="${escapeHtml(n.id)}" data-change="${escapeHtml(changeName)}" transform="translate(${p.x},${p.y})">
+        <g class="${cls}" data-id="${escapeHtml(n.id)}" data-change="${escapeHtml(changeName)}" transform="translate(${p.x},${p.y})" role="button" tabindex="0" aria-label="Open change ${escapeHtml(n.label)}">
           <rect x="-18" y="-18" width="36" height="36" rx="9"></rect>
           <text class="g-label" x="-28" y="5" text-anchor="end">${escapeHtml(n.label)}</text>
           <text class="g-sub" x="-28" y="20" text-anchor="end">${n.archived ? "archived" : n.status} · ${n.completedTasks ?? 0}/${n.totalTasks ?? 0}</text>
@@ -1184,13 +1296,20 @@ function renderGraph() {
   svg.querySelectorAll(".g-node").forEach((el) => {
     el.addEventListener("mouseenter", () => highlight(el.dataset.id));
     el.addEventListener("mouseleave", clearHighlight);
-    el.addEventListener("click", () => {
+    const activate = () => {
       if (el.dataset.change) openDetail(el.dataset.change);
       if (el.dataset.spec) {
         state.focusSpec = state.focusSpec === el.dataset.spec ? null : el.dataset.spec;
         renderGraph();
         renderStats();
         writeHash();
+      }
+    };
+    el.addEventListener("click", activate);
+    el.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        activate();
       }
     });
   });
@@ -1319,6 +1438,7 @@ function renderBoard() {
 }
 
 async function openDetail(name, opts = {}) {
+  state.dirtyEditors.clear();
   state.selected = name;
   renderChangeList();
   setView("detail", { silent: true });
@@ -1356,6 +1476,7 @@ async function openDetail(name, opts = {}) {
   renderMarkdownPanels(detail);
   showTab(opts.tab || state.tab || "tasks", { silent: true });
   if (!opts.silent) writeHash();
+  if (state.pendingReload) schedulePendingReload();
 }
 
 function refreshViews() {
@@ -1378,9 +1499,9 @@ async function loadData({ quiet = false } = {}) {
   if (state.view === "detail" && state.selected) {
     try {
       const detail = await api(`/api/changes/${encodeURIComponent(state.selected)}`);
-      state.detail = detail;
       const still = state.changes.some((c) => c.name === state.selected);
-      if (still) {
+      if (still && !hasDirtyEditors()) {
+        state.detail = detail;
         $("#detail-title").textContent = detail.displayName;
         $("#detail-status").textContent = detail.archived ? "archived" : detail.status;
         setProgress(detail.completedTasks, detail.totalTasks, detail.archived);
@@ -1405,6 +1526,50 @@ function setLive(status, label) {
   if (el) el.textContent = label;
 }
 
+function schedulePendingReload() {
+  if (!state.pendingReload) return;
+  if (state.reloadTimer) {
+    clearTimeout(state.reloadTimer);
+    state.reloadTimer = null;
+  }
+  if (hasDirtyEditors()) {
+    setLive("live", "changes pending");
+    return;
+  }
+
+  const selfWriteDelay = Math.max(0, state.selfWriteUntil - Date.now());
+  if (selfWriteDelay > 0) {
+    setLive("live", "changes pending");
+  } else {
+    setLive("live", "sync…");
+  }
+  state.reloadTimer = setTimeout(async () => {
+    state.reloadTimer = null;
+    if (hasDirtyEditors() || Date.now() < state.selfWriteUntil) {
+      schedulePendingReload();
+      return;
+    }
+    const reloadGeneration = state.reloadGeneration;
+    try {
+      await loadData({ quiet: true });
+      state.pendingReload = state.reloadGeneration !== reloadGeneration;
+      setLive("live", "live · synced");
+      if (state.pendingReload) {
+        schedulePendingReload();
+        return;
+      }
+      setTimeout(() => {
+        if (!state.pendingReload && !hasDirtyEditors()) {
+          setLive("live", "live");
+        }
+      }, 1200);
+    } catch (err) {
+      setLive("offline", "error sync");
+      toast(err.message, "error");
+    }
+  }, Math.max(200, selfWriteDelay + 20));
+}
+
 function connectLive() {
   if (typeof EventSource === "undefined") {
     setLive("offline", "no SSE");
@@ -1412,30 +1577,10 @@ function connectLive() {
   }
   const es = new EventSource("/api/events");
   es.addEventListener("hello", () => setLive("live", "live"));
-  es.addEventListener("reload", (ev) => {
-    let data = {};
-    try {
-      data = JSON.parse(ev.data);
-    } catch {
-      // ignore
-    }
-    if (Date.now() < state.selfWriteUntil && data.reason === "toggle") {
-      return;
-    }
-    setLive("live", "sync…");
-    if (state.reloadTimer) clearTimeout(state.reloadTimer);
-    state.reloadTimer = setTimeout(async () => {
-      try {
-        await loadData({ quiet: true });
-        setLive("live", "live · synced");
-        setTimeout(() => {
-          if (state.live.startsWith("live")) setLive("live", "live");
-        }, 1200);
-      } catch (err) {
-        setLive("offline", "error sync");
-        toast(err.message, "error");
-      }
-    }, 200);
+  es.addEventListener("reload", () => {
+    state.pendingReload = true;
+    state.reloadGeneration += 1;
+    schedulePendingReload();
   });
   es.onerror = () => {
     setLive("offline", "reconnecting…");
@@ -1445,8 +1590,13 @@ function connectLive() {
 
 /* ——— Search (⌘K) ——— */
 function openSearch() {
+  if (!state.searchOpen) {
+    state.searchReturnFocus =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  }
   state.searchOpen = true;
   $("#search-modal").classList.remove("hidden");
+  setAppInert(true);
   const input = $("#search-input");
   input.value = "";
   state.searchHits = [];
@@ -1458,6 +1608,9 @@ function openSearch() {
 function closeSearch() {
   state.searchOpen = false;
   $("#search-modal").classList.add("hidden");
+  setAppInert(false);
+  state.searchReturnFocus?.focus();
+  state.searchReturnFocus = null;
 }
 
 function renderSearchResults() {
@@ -1523,6 +1676,9 @@ async function activateSearchHit(idx) {
 
 function initSearch() {
   $("#search-launch")?.addEventListener("click", openSearch);
+  $("#search-modal")?.addEventListener("keydown", (event) => {
+    trapModalTab(event, event.currentTarget);
+  });
   $("#search-modal")?.addEventListener("click", (e) => {
     if (e.target.id === "search-modal") closeSearch();
   });

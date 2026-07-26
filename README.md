@@ -131,7 +131,11 @@ npm run build
 |--------|---------|
 | `npm run dev` | Run CLI via `tsx` |
 | `npm run build` | Compile TypeScript + copy UI assets |
-| `npm test` | Run unit tests (Vitest) |
+| `npm test` | Run all unit and integration tests (Vitest) |
+| `npm run test:unit` | Run focused unit tests |
+| `npm run test:integration` | Run filesystem and HTTP integration tests |
+| `npm run test:coverage` | Run Node-source coverage with V8 |
+| `npm run test:browser` | Run critical UI journeys in deterministic Chromium |
 | `npm run test:package` | Pack, clean-install, and smoke-test the published CLI |
 | `npm run typecheck` | `tsc --noEmit` |
 
