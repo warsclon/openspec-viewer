@@ -5,7 +5,7 @@
   protection, and private vulnerability reporting through `gh api`
 - [x] 1.2 Record the exact successful check names produced by the Node.js 20 and
   22 CI matrix so the ruleset does not depend on guessed names
-- [x] 1.3 Inventory current collaborators, teams, deploy keys, webhooks, Actions
+- [ ] 1.3 Inventory current collaborators, teams, deploy keys, webhooks, Actions
   secrets and variables, environments, and installed GitHub Apps without
   printing secret values
 - [x] 1.4 Define the maintainer recovery procedure for a broken required check or
@@ -54,7 +54,7 @@
   security overview reports the feature as active
 - [x] 3.3 Enable Dependabot security updates and verify they are not constrained
   by the routine monthly version-update schedule
-- [x] 3.4 Enable secret scanning for the public repository and confirm scans
+- [ ] 3.4 Enable secret scanning for the public repository and confirm scans
   cover the full reachable Git history
 - [ ] 3.5 Enable push protection for contributors and confirm bypass requests
   are visible to the maintainer

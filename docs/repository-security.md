@@ -9,8 +9,9 @@ account identifiers, or private advisory details.
 ## Rollout state
 
 The maintainer changed the repository visibility to public on 2026-07-26 after
-the file-backed hardening reached `main`. Public-only controls are now being
-verified before the default-branch ruleset is enforced.
+the file-backed hardening reached `main`. The default-branch ruleset is active
+and its negative controls have been verified; final push-protection, integration
+access, green-merge, and closeout verification remain pending.
 
 Baseline captured on 2026-07-26:
 
@@ -305,21 +306,15 @@ Public enforcement evidence captured on 2026-07-26:
   reported `mergeStateStatus: BLOCKED`; the pull request was closed without
   merge and its branch was deleted.
 
-After the repository becomes public:
+Remaining closeout steps:
 
-1. Confirm dependency graph, alerts, security updates, secret scanning, push
-   protection, non-provider patterns, validity checks, CodeQL, and private
-   reporting through the API and repository Security settings.
-2. Record the exact successful CodeQL and dependency-review check names.
-3. Create the `main` ruleset from observed check names.
-4. Verify a harmless direct push and a deliberately failing pull request cannot
-   update `main`.
-5. Verify a fully green representative pull request can merge normally.
-6. Test push protection only with GitHub's documented harmless test value on a
+1. Verify the fully green representative pull request can merge normally.
+2. Test push protection only with GitHub's documented harmless test value on a
    disposable branch, then remove the local commit and branch.
-7. Run a maintained secret scanner over the working tree and reachable Git
-   history.
-8. Validate a clean clone of the default branch.
+3. Reduce installed GitHub App and OAuth access to the repositories required
+   for each current purpose.
+4. Re-query every externally managed control and update this document with the
+   final result.
 
 The final verification section must record the date, result, and non-sensitive
 evidence URL for every control before this OpenSpec change is archived.
