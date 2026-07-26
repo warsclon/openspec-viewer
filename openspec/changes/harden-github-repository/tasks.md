@@ -29,7 +29,7 @@
   receives an isolated compatibility review
 - [x] 2.5 Document that Dependabot pull requests are never auto-merged and must
   pass the complete required CI and security matrix
-- [ ] 2.6 Validate the YAML structure locally and confirm GitHub accepts both
+- [x] 2.6 Validate the YAML structure locally and confirm GitHub accepts both
   update configurations on the repository dependency graph page
 - [x] 2.7 Record the security and compatibility decision for Dependabot PRs #1
   through #5 in `design.md`
@@ -135,7 +135,7 @@
   after all file-backed security changes
 - [x] 7.3 Run a high-confidence secret scan over the working tree and complete
   reachable Git history using Gitleaks or an equivalent maintained scanner
-- [ ] 7.4 Clone the default branch into a clean temporary directory and confirm
+- [x] 7.4 Clone the default branch into a clean temporary directory and confirm
   it excludes `.env` files, local notes, generated `dist`, credentials, and
   non-public fixture data
 - [ ] 7.5 Re-query GitHub and confirm dependency alerts and updates, secret

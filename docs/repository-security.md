@@ -43,6 +43,9 @@ Controls enabled and re-queried during the private implementation on
   verified marketplace actions disallowed, and no additional allowed patterns.
 - Default workflow permissions remained read-only and Actions remained unable
   to approve pull-request reviews.
+- After the Dependabot policy reached `main`, GitHub rendered Dependabot version
+  updates as configured and linked to the merged configuration. The file-backed
+  npm and GitHub Actions entries had already passed local YAML parsing.
 
 File-backed validation on 2026-07-26 completed with zero npm audit
 vulnerabilities, a clean typecheck, 106 passing Vitest tests, a successful
@@ -51,6 +54,14 @@ fixture OpenSpec artifacts.
 
 Gitleaks 8.30.1 completed a redacted scan of the working tree and all 29
 reachable commits on 2026-07-26. Both scans reported no leaks.
+
+A clean single-branch clone of `main` at
+`55bdd192180b4d129dd8d4ff58f5ed7a9a7f0393` was inspected on 2026-07-26. It
+contained no tracked `.env`, `dist`, `node_modules`, coverage, Playwright
+output, `.openspec-viewer`, credential, or private-key paths. Focused content
+searches found no personal machine paths or private fixture data, and Gitleaks
+reported no leaks in either the clean tree or its reachable history. The
+temporary clone was removed after verification.
 
 The five stable CI check names observed before ruleset configuration are:
 
