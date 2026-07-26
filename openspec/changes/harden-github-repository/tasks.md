@@ -3,7 +3,7 @@
 - [ ] 1.1 Capture the current repository visibility, default branch, security
   feature statuses, Actions policy, workflow permissions, rulesets, branch
   protection, and private vulnerability reporting through `gh api`
-- [ ] 1.2 Record the exact successful check names produced by the Node.js 20 and
+- [x] 1.2 Record the exact successful check names produced by the Node.js 20 and
   22 CI matrix so the ruleset does not depend on guessed names
 - [ ] 1.3 Inventory current collaborators, teams, deploy keys, webhooks, Actions
   secrets and variables, environments, and installed GitHub Apps without

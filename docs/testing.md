@@ -99,6 +99,19 @@ The required pull-request path targets completion within 10 minutes. Browser
 traces and screenshots are uploaded only when that job fails, use only the
 fictional fixture, and expire after seven days.
 
+Pull request #13 established the first live baseline on 2026-07-26:
+
+| Displayed check name | Result | Duration |
+| --- | --- | ---: |
+| `quality (Node 20)` | Passed | 44 seconds |
+| `quality (Node 22)` | Passed | 24 seconds |
+| `browser (Chromium)` | Passed | 57 seconds |
+| `package smoke (Node 20)` | Passed | 22 seconds |
+| `package smoke (Node 22)` | Passed | 21 seconds |
+
+All jobs ran in parallel. The observed required path was 57 seconds, well
+within the 10-minute target.
+
 The 2026-07-25 pre-expansion baseline used the original four test files and
 eleven tests:
 

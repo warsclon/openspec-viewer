@@ -99,7 +99,7 @@
   exclusions
 - [x] 5.4 Install the tarball into a clean temporary directory and invoke only
   its installed `openspec-viewer` binary
-- [ ] 5.5 Verify installed `--help`, `--version`, invalid input, project start,
+- [x] 5.5 Verify installed `--help`, `--version`, invalid input, project start,
   health response, and clean termination on Node.js 20 and 22
 - [x] 5.6 Confirm package smoke never imports source files, local `node_modules`,
   or unlisted repository assets
@@ -139,9 +139,9 @@
 - [x] 7.5 Add stable package-smoke checks on Node.js 20 and 22 using the clean
   tarball installation path
 - [x] 7.6 Validate the fictional fixture and all active OpenSpec changes in CI
-- [ ] 7.7 Measure each job duration and keep the required pull-request path
+- [x] 7.7 Measure each job duration and keep the required pull-request path
   within the documented target or record an optimization follow-up
-- [ ] 7.8 Verify the displayed GitHub check names and provide them to
+- [x] 7.8 Verify the displayed GitHub check names and provide them to
   `harden-github-repository` before its `main` ruleset is enabled
 - [ ] 7.9 Replace the mutable `actions/checkout@v4` and
   `actions/setup-node@v4` references with reviewed current v7 commit SHAs and
