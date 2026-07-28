@@ -293,6 +293,11 @@ because the current OAuth token cannot enumerate those installations. Record
 only the review date and outcome, not installation IDs or unrelated account
 access.
 
+On 2026-07-28, the maintainer confirmed that retained GitHub Apps use selected
+repository access and that the private OAuth purpose, scope, owner, and
+retention review was complete. No account-level inventory or authorization
+details are recorded in this public repository.
+
 An unavailable endpoint is evidence only when its HTTP result is recorded with
 the repository visibility and plan limitation. It must not be converted into an
 enabled or passing status.

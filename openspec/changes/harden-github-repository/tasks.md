@@ -125,7 +125,7 @@
 - [x] 6.4 Remove unused Actions secrets and variables, scope retained values to
   the smallest environment, and document their rotation owner without recording
   their values
-- [ ] 6.5 Configure retained GitHub Apps for selected repositories by default,
+- [x] 6.5 Configure retained GitHub Apps for selected repositories by default,
   limiting each installation to the repositories required for its current
   purpose; retain account-wide access only as an optional, privately documented
   exception, and review each OAuth authorization's purpose, scopes, owner, and
