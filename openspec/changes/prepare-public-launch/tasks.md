@@ -1,21 +1,21 @@
 ## 1. Launch Prerequisites
 
 - [ ] 1.1 Verify control of the intended npm scope and record the final scoped package name
-- [ ] 1.2 Choose and document the static hosting target after testing base-path and hash-route behavior
-- [ ] 1.3 Define the supported Node.js and OpenSpec version matrix from current behavior and compatibility checks
-- [ ] 1.4 Inventory current GitHub settings, open dependency pull requests, metadata, and release state as the launch baseline
-- [ ] 1.5 Define fictional demo content that exercises every primary view without real project or machine data
+- [x] 1.2 Choose and document the static hosting target after testing base-path and hash-route behavior
+- [x] 1.3 Define the supported Node.js and OpenSpec version matrix from current behavior and compatibility checks
+- [x] 1.4 Inventory current GitHub settings, open dependency pull requests, metadata, and release state as the launch baseline
+- [x] 1.5 Define fictional demo content that exercises every primary view without real project or machine data
 
 ## 2. Deterministic Demo Foundation
 
-- [ ] 2.1 Add the representative OpenSpec fixture with active, archived, partial, complete, and delta-spec examples
-- [ ] 2.2 Validate the demo fixture with each supported OpenSpec version in the compatibility matrix
-- [ ] 2.3 Add a CLI `--demo` option that resolves the bundled fixture without reading or writing the caller project
-- [ ] 2.4 Add isolated temporary-copy behavior for local demo mutations and verify cleanup on exit
-- [ ] 2.5 Add a visible demo indicator and document the difference between demo data and a real project
-- [ ] 2.6 Define a static snapshot adapter that conforms to the existing browser API response contracts
-- [ ] 2.7 Add a hosted-demo read-only capability flag and remove or disable every mutation control under that flag
-- [ ] 2.8 Build the static hosted demo with the shared fixture and verify all deep links under the selected base path
+- [x] 2.1 Add the representative OpenSpec fixture with active, archived, partial, complete, and delta-spec examples
+- [x] 2.2 Validate the demo fixture with each supported OpenSpec version in the compatibility matrix
+- [x] 2.3 Add a CLI `--demo` option that resolves the bundled fixture without reading or writing the caller project
+- [x] 2.4 Add isolated temporary-copy behavior for local demo mutations and verify cleanup on exit
+- [x] 2.5 Add a visible demo indicator and document the difference between demo data and a real project
+- [x] 2.6 Define a static snapshot adapter that conforms to the existing browser API response contracts
+- [x] 2.7 Add a hosted-demo read-only capability flag and remove or disable every mutation control under that flag
+- [x] 2.8 Build the static hosted demo with the shared fixture and verify all deep links under the selected base path
 
 ## 3. Public-Seam Verification
 
@@ -23,7 +23,7 @@
   as a public-launch or repository-ruleset gate
 - [ ] 3.2 Extend the shared deterministic fixture and browser harness only with
   launch-specific demo, hosted read-only, and media-capture scenarios
-- [ ] 3.3 Test hosted-demo read-only behavior and ensure every mutation control
+- [x] 3.3 Test hosted-demo read-only behavior and ensure every mutation control
   and write path is unavailable
 - [ ] 3.4 Add launch-specific accessibility checks for demo labeling, visual
   alternative text, keyboard flow, and reduced-motion media
@@ -56,7 +56,7 @@
 
 ## 6. Repository Trust and Security
 
-- [ ] 6.1 Complete and archive `harden-github-repository` as the source of truth
+- [x] 6.1 Complete and archive `harden-github-repository` as the source of truth
   for dependency, secret, workflow, access, and default-branch controls
 - [ ] 6.2 Re-run its versioned repository-security audit after the repository
   becomes public and retain launch-specific Pages and release configuration
@@ -72,9 +72,9 @@
 - [ ] 7.2 Create a small initial set of roadmap issues with context, scope, acceptance criteria, and validation notes
 - [ ] 7.3 Mark only independently executable issues as `good first issue` or `help wanted`
 - [ ] 7.4 Link contributor documentation to the roadmap, support path, demo fixture, and public-seam test commands
-- [ ] 7.5 Configure Dependabot groups for compatible patch/minor npm updates and GitHub Actions updates
-- [ ] 7.6 Keep major dependency updates isolated and document the required compatibility review
-- [ ] 7.7 Review the existing Dependabot pull requests and close, merge, or supersede each with a recorded reason
+- [x] 7.5 Configure Dependabot groups for compatible patch/minor npm updates and GitHub Actions updates
+- [x] 7.6 Keep major dependency updates isolated and document the required compatibility review
+- [x] 7.7 Review the existing Dependabot pull requests and close, merge, or supersede each with a recorded reason
 - [ ] 7.8 Decide whether Discussions has enough expected usage to enable now; otherwise document the current question channel
 
 ## 8. Public Launch Validation
@@ -82,7 +82,7 @@
 - [ ] 8.1 Deploy the read-only demo and set the verified public URL as the repository homepage
 - [ ] 8.2 Run README instructions from a clean machine or isolated environment with no source checkout
 - [ ] 8.3 Verify the screenshot, animation, social preview, badges, links, package commands, and accessibility text on GitHub
-- [ ] 8.4 Verify required CI and security checks on a representative pull request after the ruleset is active
+- [x] 8.4 Verify required CI and security checks on a representative pull request after the ruleset is active
 - [ ] 8.5 Verify the package and GitHub Release from a fresh external install and record the tested versions
 - [ ] 8.6 Confirm GitHub community health, topics, roadmap issues, contribution paths, and dependency activity are publicly legible
 - [ ] 8.7 Update the changelog and publish the launch announcement with demo, installation, release, and contribution links

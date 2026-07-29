@@ -16,6 +16,7 @@ export default defineConfig({
           name: "integration",
           include: ["test/integration/**/*.test.ts"],
           environment: "node",
+          fileParallelism: false,
         },
       },
     ],

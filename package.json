@@ -8,12 +8,14 @@
   },
   "files": [
     "dist",
+    "demo",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
   ],
   "scripts": {
     "build": "node scripts/clean.js && tsc && node scripts/copy-ui.js",
+    "build:hosted-demo": "npm run build && node scripts/build-hosted-demo.js",
     "dev": "tsx src/cli.ts",
     "start": "node dist/cli.js",
     "typecheck": "tsc --noEmit",

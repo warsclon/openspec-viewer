@@ -2,6 +2,10 @@ const PREFS_THEME = "osv:theme";
 const PREFS_FONT = "osv:fontScale";
 const FONT_STEPS = ["sm", "md", "lg", "xl"];
 const FONT_LABELS = { sm: "S", md: "M", lg: "L", xl: "XL" };
+const RUNTIME_CONFIG = globalThis.__OPENSPEC_VIEWER_RUNTIME__ || {
+  mode: "local",
+};
+const HOSTED_DEMO = RUNTIME_CONFIG.mode === "hosted-demo";
 
 const state = {
   changes: [],
@@ -28,6 +32,7 @@ const state = {
   dirtyEditors: new Set(),
   pendingReload: false,
   reloadGeneration: 0,
+  readOnly: false,
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -122,7 +127,92 @@ function toast(msg, type = "ok") {
   toast._t = setTimeout(() => el.classList.add("hidden"), 2400);
 }
 
+let hostedSnapshotPromise;
+
+function normalizeSearchText(value) {
+  return String(value)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "");
+}
+
+function hostedSearch(documents, query) {
+  const normalizedQuery = normalizeSearchText(query.trim());
+  if (!normalizedQuery) return [];
+  const parts = normalizedQuery.split(/\s+/).filter(Boolean);
+
+  return documents
+    .map((document) => {
+      const title = normalizeSearchText(document.title);
+      const text = normalizeSearchText(document.text);
+      let score = 0;
+      if (title === normalizedQuery) score = 100;
+      else if (title.startsWith(normalizedQuery)) score = 80;
+      else if (title.includes(normalizedQuery)) score = 60;
+      else if (text.includes(normalizedQuery)) score = 50;
+      else if (parts.length > 1 && parts.every((part) => text.includes(part))) {
+        score = 40;
+      }
+      score *= document.weight || 1;
+      if (!score) return null;
+
+      const compact = String(document.text).replace(/\s+/g, " ").trim();
+      const index = normalizeSearchText(compact).indexOf(normalizedQuery);
+      const start = Math.max(0, index < 0 ? 0 : index - 60);
+      const end = Math.min(
+        compact.length,
+        index < 0 ? 120 : index + query.length + 60,
+      );
+      return {
+        ...document,
+        score,
+        snippet: `${start > 0 ? "…" : ""}${compact.slice(start, end)}${
+          end < compact.length ? "…" : ""
+        }`,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+    .slice(0, 40)
+    .map(({ text: _text, weight: _weight, ...hit }) => hit);
+}
+
+async function hostedApi(path, options) {
+  if (options?.method && options.method !== "GET") {
+    throw new Error("Hosted demo is read-only");
+  }
+  hostedSnapshotPromise ??= fetch(
+    RUNTIME_CONFIG.snapshotUrl || "./snapshot.json",
+  ).then((response) => {
+    if (!response.ok) throw new Error("Hosted demo snapshot is unavailable");
+    return response.json();
+  });
+  const snapshot = await hostedSnapshotPromise;
+
+  if (path === "/api/project") return snapshot.project;
+  if (path === "/api/changes") return snapshot.changes;
+  if (path === "/api/graph") return snapshot.changes.graph;
+  if (path === "/api/next") return { items: snapshot.changes.nextUp };
+  if (path.startsWith("/api/search")) {
+    const url = new URL(path, "https://openspec-viewer.invalid");
+    const query = url.searchParams.get("q") || "";
+    return {
+      query,
+      hits: hostedSearch(snapshot.searchDocuments, query),
+    };
+  }
+  const detailMatch = path.match(/^\/api\/changes\/([^/]+)$/);
+  if (detailMatch) {
+    const name = decodeURIComponent(detailMatch[1]);
+    const detail = snapshot.details[name];
+    if (!detail) throw new Error(`Change not found: ${name}`);
+    return detail;
+  }
+  throw new Error(`Hosted demo route is unavailable: ${path}`);
+}
+
 async function api(path, options) {
+  if (HOSTED_DEMO) return hostedApi(path, options);
   if (["POST", "PUT", "PATCH", "DELETE"].includes(options?.method)) {
     state.selfWriteUntil = Date.now() + 1200;
   }
@@ -356,7 +446,7 @@ async function mutateTasks(action) {
 
 function renderTasks(detail) {
   const panel = $("#panel-tasks");
-  const readonly = detail.archived;
+  const readonly = detail.archived || state.readOnly;
 
   if (!detail.tasks) {
     panel.innerHTML = readonly
@@ -378,7 +468,11 @@ function renderTasks(detail) {
   }
 
   panel.innerHTML =
-    (readonly ? `<p class="banner">Archived · read-only</p>` : "") +
+    (readonly
+      ? `<p class="banner">${
+          state.readOnly ? "Hosted demo · read-only" : "Archived · read-only"
+        }</p>`
+      : "") +
     `<div class="tasks-toolbar">${
       readonly
         ? ""
@@ -656,17 +750,17 @@ function renderMarkdownPanels(detail) {
   mountEditor($("#panel-proposal"), {
     artifact: "proposal",
     content: detail.proposal ?? "",
-    readonly: detail.archived,
+    readonly: detail.archived || state.readOnly,
   });
   mountEditor($("#panel-design"), {
     artifact: "design",
     content: detail.design ?? "",
-    readonly: detail.archived,
+    readonly: detail.archived || state.readOnly,
   });
   mountEditor($("#panel-notes"), {
     artifact: "notes",
     content: detail.notes ?? "",
-    readonly: false,
+    readonly: state.readOnly,
   });
 
   if (!detail.specs?.length) {
@@ -1470,7 +1564,10 @@ async function openDetail(name, opts = {}) {
   setProgress(detail.completedTasks, detail.totalTasks, detail.archived);
   const archiveBtn = $("#btn-archive");
   if (archiveBtn) {
-    archiveBtn.classList.toggle("hidden", Boolean(detail.archived));
+    archiveBtn.classList.toggle(
+      "hidden",
+      Boolean(detail.archived || state.readOnly),
+    );
   }
   renderTasks(detail);
   renderMarkdownPanels(detail);
@@ -1571,6 +1668,10 @@ function schedulePendingReload() {
 }
 
 function connectLive() {
+  if (HOSTED_DEMO) {
+    setLive("offline", "read-only demo");
+    return;
+  }
   if (typeof EventSource === "undefined") {
     setLive("offline", "no SSE");
     return;
@@ -1724,7 +1825,18 @@ async function init() {
   connectLive();
 
   const project = await api("/api/project");
-  $("#project-path").textContent = project.projectDir;
+  state.readOnly = project.capabilities?.readOnly === true;
+  const demo = project.mode === "demo" || project.mode === "hosted-demo";
+  $("#project-path").textContent = demo
+    ? project.label || "Fictional demo project"
+    : project.projectDir;
+  const demoIndicator = $("#demo-indicator");
+  if (demoIndicator) {
+    demoIndicator.textContent = state.readOnly ? "Read-only demo" : "Demo mode";
+    demoIndicator.classList.toggle("hidden", !demo);
+  }
+  document.body.dataset.mode = project.mode || "local";
+  $("#btn-new-change")?.classList.toggle("hidden", state.readOnly);
 
   await loadData();
 

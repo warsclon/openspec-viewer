@@ -6,7 +6,8 @@ import { fileURLToPath } from "node:url";
 const FIXTURE_ROOT = join(
   dirname(fileURLToPath(import.meta.url)),
   "..",
-  "fixtures",
+  "..",
+  "demo",
   "representative-openspec",
 );
 

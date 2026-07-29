@@ -197,6 +197,7 @@ type SseClient = { id: number; res: ServerResponse };
 
 export type ServerOptions = {
   root: ProjectRoot;
+  mode?: "demo";
   host?: string;
   port?: number;
   includeArchive?: boolean;
@@ -282,7 +283,18 @@ export function startServer(opts: ServerOptions) {
       }
 
       if (method === "GET" && pathname === "/api/project") {
-        return sendJson(res, 200, getProjectInfo(root));
+        const project = getProjectInfo(root);
+        return sendJson(
+          res,
+          200,
+          opts.mode === "demo"
+            ? {
+                ...project,
+                mode: "demo",
+                label: "Fictional demo project",
+              }
+            : project,
+        );
       }
 
       if (method === "GET" && pathname === "/api/search") {

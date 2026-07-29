@@ -1,7 +1,10 @@
 # repository-security-governance Specification
 
 ## Purpose
-TBD - created by archiving change harden-github-repository. Update Purpose after archive.
+
+Define the dependency, secret, workflow, access, default-branch, and repeatable
+verification controls that protect the public repository.
+
 ## Requirements
 ### Requirement: Dependency risk is continuously monitored
 

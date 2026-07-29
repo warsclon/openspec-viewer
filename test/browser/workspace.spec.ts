@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Page } from "@playwright/test";
+import { startTestServer } from "../helpers/server.js";
 import { expect, test } from "./fixtures.js";
 
 function inputWithValue(page: Page, value: string) {
@@ -328,7 +329,9 @@ test("persists proposal, design, and local notes while archived artifacts remain
   ).toBe(proposal);
 
   await page.getByRole("button", { name: "Design", exact: true }).click();
-  await page.locator("#panel-design .editor-input").fill(design);
+  const designEditor = page.locator("#panel-design .editor-input");
+  await expect(designEditor).toHaveValue(/local browser state/);
+  await designEditor.fill(design);
   const designResponse = page.waitForResponse(
     (response) =>
       response.url().endsWith("/design") &&
@@ -347,7 +350,9 @@ test("persists proposal, design, and local notes while archived artifacts remain
   ).toBe(design);
 
   await page.getByRole("button", { name: "Notes", exact: true }).click();
-  await page.locator("#panel-notes .editor-input").fill(notes);
+  const notesEditor = page.locator("#panel-notes .editor-input");
+  await expect(notesEditor).toHaveValue("");
+  await notesEditor.fill(notes);
   const notesResponse = page.waitForResponse(
     (response) =>
       response.url().endsWith("/notes") &&
@@ -477,4 +482,21 @@ test("keeps primary keyboard controls named, visibly focused, and restores dialo
   await expect(
     page.getByRole("heading", { name: "browser-created-change" }),
   ).toBeVisible();
+});
+
+test("identifies demo content without exposing its temporary machine path", async ({
+  page,
+}) => {
+  const server = await startTestServer({ mode: "demo" });
+  try {
+    await page.goto(`${server.url}/#/next`);
+
+    await expect(page.getByText("Demo mode", { exact: true })).toBeVisible();
+    await expect(page.locator("#project-path")).toHaveText(
+      "Fictional demo project",
+    );
+    await expect(page.locator("body")).not.toContainText(server.projectDir);
+  } finally {
+    await server.close();
+  }
 });

@@ -19,7 +19,7 @@ export type CliProcess = {
 export type StartCliProcessOptions = {
   executable: string;
   prefixArgs?: string[];
-  projectDir: string;
+  projectDir?: string;
   args?: string[];
   cwd?: string;
   env?: NodeJS.ProcessEnv;
@@ -37,8 +37,7 @@ export async function startCliProcess(
     options.executable,
     [
       ...(options.prefixArgs ?? []),
-      "--path",
-      options.projectDir,
+      ...(options.projectDir ? ["--path", options.projectDir] : []),
       "--host",
       "127.0.0.1",
       "--port",

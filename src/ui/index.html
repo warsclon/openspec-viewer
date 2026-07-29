@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>OpenSpec Viewer</title>
-    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="./styles.css" />
     <script>
       (() => {
         try {
@@ -24,6 +24,13 @@
           <div>
             <h1>OpenSpec Viewer</h1>
             <p id="project-path" class="muted">…</p>
+            <p
+              id="demo-indicator"
+              class="demo-indicator hidden"
+              role="status"
+            >
+              Demo mode
+            </p>
             <p class="live-line">
               <span id="live-dot" class="live-dot" title="Live reload"></span>
               <span id="live-label" class="muted">connecting…</span>
@@ -165,6 +172,7 @@
     </div>
 
     <div id="toast" class="toast hidden"></div>
-    <script src="/app.js" type="module"></script>
+    <script src="./runtime-config.js"></script>
+    <script src="./app.js" type="module"></script>
   </body>
 </html>

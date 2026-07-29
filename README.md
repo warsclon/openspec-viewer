@@ -55,7 +55,17 @@ openspec-viewer /path/to/project
 openspec-viewer --path ../my-app --port 5173
 openspec-viewer --no-open
 openspec-viewer --no-archive   # hide archived changes
+
+# explore fictional data without an existing OpenSpec project
+openspec-viewer --demo
 ```
+
+`--demo` copies the bundled fictional project into a temporary directory.
+Edits and task mutations affect only that isolated copy and are discarded when
+the CLI exits. The sidebar identifies demo content and does not display the
+temporary machine path. This local demo remains writable so the full workflow
+can be explored; the future hosted demo is separately constrained to read-only
+behavior.
 
 Development (TypeScript, no build step):
 
@@ -70,6 +80,7 @@ npm run dev -- --path /path/to/project
 | `[path]` / `--path <dir>` | Project root to scan (default: cwd) |
 | `-p, --port <n>` | Port (default: `4321`; use `0` for an ephemeral port) |
 | `--host <host>` | Host (default: `127.0.0.1`) |
+| `--demo` | Open the bundled fictional project in an isolated temporary copy |
 | `--no-archive` | Hide archived changes |
 | `--no-open` | Do not open the browser |
 | `-h, --help` | Help |

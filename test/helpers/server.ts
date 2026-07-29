@@ -13,6 +13,7 @@ export type TestServer = {
 
 export type TestServerOptions = {
   includeArchive?: boolean;
+  mode?: "demo";
   runCommand?: CommandRunner;
   watchFactory?: WatchFactory;
   watchDebounceMs?: number;

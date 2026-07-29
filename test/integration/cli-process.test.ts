@@ -1,4 +1,11 @@
 import { execFileSync } from "node:child_process";
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { startCliProcess, type CliProcess } from "../helpers/cli-process.js";
@@ -66,5 +73,68 @@ describe("compiled CLI process", () => {
     expect(exit.code).toBeNull();
     expect(exit.signal).toBe("SIGTERM");
     await expect(fetch(`${cli.url}/api/health`)).rejects.toThrow();
+  });
+
+  it("runs the bundled demo in an isolated temporary copy and removes it on exit", async () => {
+    const callerDir = mkdtempSync(join(tmpdir(), "openspec-viewer-demo-caller-"));
+    const fixtureTasks = join(
+      process.cwd(),
+      "demo",
+      "representative-openspec",
+      "openspec",
+      "changes",
+      "add-dark-mode",
+      "tasks.md",
+    );
+    const fixtureBefore = readFileSync(fixtureTasks, "utf8");
+
+    try {
+      const cli = await startCliProcess({
+        executable: process.execPath,
+        prefixArgs: [join(process.cwd(), "dist", "cli.js")],
+        args: ["--demo"],
+        cwd: callerDir,
+      });
+      processes.push(cli);
+
+      const project = await fetch(`${cli.url}/api/project`).then((response) =>
+        response.json(),
+      );
+      expect(project).toMatchObject({
+        mode: "demo",
+        label: "Fictional demo project",
+      });
+      expect(existsSync(project.projectDir)).toBe(true);
+      expect(existsSync(join(callerDir, "openspec"))).toBe(false);
+
+      const changes = await fetch(`${cli.url}/api/changes`).then((response) =>
+        response.json(),
+      );
+      expect(
+        changes.changes
+          .filter((change: { archived: boolean }) => !change.archived)
+          .map((change: { lastModified: string }) => change.lastModified),
+      ).toEqual([
+        "2026-07-15T12:00:00.000Z",
+        "2026-07-15T12:00:00.000Z",
+      ]);
+
+      const toggle = await fetch(
+        `${cli.url}/api/changes/add-dark-mode/tasks/toggle`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ taskId: "1.2", done: true }),
+        },
+      );
+      expect(toggle.status).toBe(200);
+
+      const exit = await cli.stop();
+      expect(exit.forced).toBe(false);
+      expect(existsSync(project.projectDir)).toBe(false);
+      expect(readFileSync(fixtureTasks, "utf8")).toBe(fixtureBefore);
+    } finally {
+      rmSync(callerDir, { recursive: true, force: true });
+    }
   });
 });
