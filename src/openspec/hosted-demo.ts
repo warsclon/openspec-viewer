@@ -13,9 +13,10 @@ import {
   listNextUp,
   type Overview,
 } from "./project.js";
+import type { SearchHitKind } from "./search.js";
 
 export type HostedSearchDocument = {
-  kind: string;
+  kind: SearchHitKind;
   id: string;
   title: string;
   subtitle: string;

@@ -36,11 +36,12 @@ screenshots only when a test fails.
 
 ## Fixture policy
 
-The committed fixture under `test/fixtures/representative-openspec/` contains
-only deterministic fictional content. A mutating test must call the helpers in
-`test/helpers/` to copy that fixture into a unique temporary directory. The
-test owns the copy and must close servers, watchers, and event streams before
-removing it.
+The shared public fixture under `demo/representative-openspec/` contains only
+deterministic fictional content. Local demo mode, the hosted read-only build,
+browser tests, and package tests all consume that same source. A mutating test
+must call the helpers in `test/helpers/` to copy the fixture into a unique
+temporary directory. The test owns the copy and must close servers, watchers,
+and event streams before removing it.
 
 Never add real repositories, usernames, machine paths, credentials, private
 notes, or nondeterministic timestamps to fixtures. Validate fixture changes
@@ -90,11 +91,14 @@ percentage does not permit deleting the corresponding scenario evidence.
 
 ## Continuous integration
 
-Pull requests run five stable checks in parallel:
+Pull requests run the five inherited checks plus four compatibility checks in
+parallel:
 
 - `quality (Node 20)` and `quality (Node 22)`.
 - `browser (Chromium)`.
 - `package smoke (Node 20)` and `package smoke (Node 22)`.
+- OpenSpec 1.6.0 and 1.7.0 strict validation for both the repository and the
+  shared demo fixture.
 
 The required pull-request path targets completion within 10 minutes. Browser
 traces and screenshots are uploaded only when that job fails, use only the

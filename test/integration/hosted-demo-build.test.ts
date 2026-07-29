@@ -53,6 +53,7 @@ describe("hosted demo build", () => {
     for (const file of [
       "index.html",
       "app.js",
+      "hosted-search.js",
       "styles.css",
       "runtime-config.js",
       "snapshot.json",
