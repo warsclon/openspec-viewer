@@ -47,7 +47,9 @@ URLs, while product deep links remain URL hash routes such as `#/next`,
 The browser verification serves the generated artifact under the exact
 repository base path and confirms that navigation, search, graph focus, detail
 views, and direct hash deep links work without a backend. GitHub Pages remains
-disabled until its deployment workflow and public URL pass the launch gate.
+disabled until the manually triggered deployment workflow and public URL pass
+the launch gate. Automatic deployment from `main` must not be enabled before
+that external verification succeeds.
 
 ## Deterministic demo content
 
@@ -74,8 +76,9 @@ The fixture passed strict validation with OpenSpec 1.6.0 and 1.7.0 on
 
 1. Authenticate the maintainer's npm account and verify control of the
    `@warsclon` scope.
-2. Add the constrained GitHub Pages deployment workflow and verify the public
-   repository-path URL before setting the homepage.
+2. Enable GitHub Pages, run the constrained manual deployment workflow, and
+   verify the public repository-path URL before setting the homepage or
+   enabling automatic deployment from `main`.
 3. Configure npm trusted publishing only after the scoped package identity and
    protected release environment are ready.
 4. Set repository homepage, topics, social preview, and release metadata only

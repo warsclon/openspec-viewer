@@ -13,7 +13,9 @@ describe("package metadata", () => {
     expect(pkg.license).toBe("MIT");
     expect(pkg.bin["openspec-viewer"]).toBe("./dist/cli.js");
     expect(pkg.engines.node).toMatch(/>=\s*20/);
-    expect(pkg.files).toContain("dist");
+    expect(pkg.files).toEqual(
+      expect.arrayContaining(["dist/cli.js", "dist/openspec", "dist/ui"]),
+    );
   });
 
   it("prints the package version through the public CLI", () => {

@@ -26,11 +26,19 @@ test("serves the complete read-only workflow from a repository base path", async
       "Fictional demo project",
     );
     await expect(page.getByRole("heading", { name: "1 next task" })).toBeVisible();
+    await expect(
+      page.locator(".next-task input[type=checkbox]").first(),
+    ).toBeDisabled();
 
-    await page.getByRole("button", { name: "Graph", exact: true }).click();
-    await expect(page).toHaveURL(/\/openspec-viewer\/#\/graph$/);
+    await page.goto(`${server.url}#/graph?spec=interface`);
+    await expect(page).toHaveURL(
+      /\/openspec-viewer\/#\/graph\?spec=interface$/,
+    );
     await expect(
       page.getByRole("img", { name: "Specs and changes graph" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /Focus: interface/ }),
     ).toBeVisible();
 
     await page.getByRole("button", { name: /Search changes/ }).click();
@@ -48,12 +56,43 @@ test("serves the complete read-only workflow from a repository base path", async
     await expect(
       page.locator("#panel-tasks input[type=checkbox]").first(),
     ).toBeDisabled();
+    await expect(page.locator('[data-act="add-section"]')).toHaveCount(0);
+    await expect(page.locator(".add-task-input")).toHaveCount(0);
 
     await page.getByRole("button", { name: "Proposal", exact: true }).click();
     await expect(page.locator("#panel-proposal textarea")).toHaveCount(0);
     await expect(page.locator("#panel-proposal")).toContainText(
       "comfortable theme",
     );
+
+    for (const tab of ["Design", "Notes"]) {
+      await page.getByRole("button", { name: tab, exact: true }).click();
+      const panel = page.locator(`#panel-${tab.toLowerCase()}`);
+      await expect(panel.locator("textarea")).toHaveCount(0);
+      await expect(panel.locator("[data-save]")).toHaveCount(0);
+    }
+
+    for (const route of ["timeline", "board"]) {
+      await page.goto(`${server.url}#/${route}`);
+      await expect(page.getByText("legacy-search").first()).toBeVisible();
+    }
+
+    for (const tab of ["proposal", "design", "tasks", "diff", "specs", "notes"]) {
+      await page.goto(`${server.url}#/change/add-dark-mode/${tab}`);
+      await expect(
+        page.getByRole("heading", { name: "add-dark-mode" }),
+      ).toBeVisible();
+      await expect(page.locator(`#panel-${tab}`)).toBeVisible();
+    }
+
+    await page.goto(
+      `${server.url}#/change/archive%2F2026-07-01-legacy-search/proposal`,
+    );
+    await expect(
+      page.getByRole("heading", { name: "legacy-search" }),
+    ).toBeVisible();
+    await expect(page.locator("#detail-status")).toHaveText("archived");
+    await expect(page.locator("#panel-proposal textarea")).toHaveCount(0);
 
     expect(
       server.requests.filter(({ pathname }) => pathname.startsWith("/api/")),

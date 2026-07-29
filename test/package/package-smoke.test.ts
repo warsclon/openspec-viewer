@@ -54,6 +54,12 @@ let pack: PackResult;
 let installedBin = "";
 let project: TestProject | undefined;
 let cli: CliProcess | undefined;
+const staleHostedOutput = join(
+  repositoryRoot,
+  "dist",
+  "hosted-demo",
+  "stale-demo.txt",
+);
 
 const expectedPackedFiles = [
   "CHANGELOG.md",
@@ -77,6 +83,8 @@ const expectedPackedFiles = [
   "dist/demo.js",
   "dist/openspec/discover.d.ts",
   "dist/openspec/discover.js",
+  "dist/openspec/hosted-demo.d.ts",
+  "dist/openspec/hosted-demo.js",
   "dist/openspec/lifecycle-workspace.d.ts",
   "dist/openspec/lifecycle-workspace.js",
   "dist/openspec/mutate.d.ts",
@@ -117,6 +125,10 @@ beforeAll(() => {
   installDir = join(tempRoot, "install");
   mkdirSync(packDir);
   mkdirSync(installDir);
+  mkdirSync(join(repositoryRoot, "dist", "hosted-demo"), {
+    recursive: true,
+  });
+  writeFileSync(staleHostedOutput, "must not be packed\n", "utf8");
 
   const output = execFileSync(
     "npm",
@@ -166,6 +178,10 @@ afterAll(async () => {
     await cli?.stop();
   } finally {
     project?.cleanup();
+    rmSync(join(repositoryRoot, "dist", "hosted-demo"), {
+      recursive: true,
+      force: true,
+    });
     if (tempRoot) rmSync(tempRoot, { recursive: true, force: true });
   }
 });

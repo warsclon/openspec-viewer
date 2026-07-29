@@ -1194,7 +1194,7 @@ function renderNext() {
                 </div>
                 <div class="progress-bar thin"><div style="width:${c.progress || 0}%"></div></div>
                 <label class="next-task">
-                  <input type="checkbox" data-change="${escapeHtml(c.name)}" data-task-id="${escapeHtml(t.id)}" />
+                  <input type="checkbox" data-change="${escapeHtml(c.name)}" data-task-id="${escapeHtml(t.id)}"${state.readOnly ? " disabled" : ""} />
                   <div>
                     ${t.section ? `<div class="muted next-section">${escapeHtml(t.section)}</div>` : ""}
                     <div><span class="task-id">${escapeHtml(t.id)}</span><span class="task-text">${escapeHtml(t.text)}</span></div>
@@ -1225,7 +1225,7 @@ function renderNext() {
     });
   });
 
-  root.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+  if (!state.readOnly) root.querySelectorAll('input[type="checkbox"]').forEach((input) => {
     input.addEventListener("change", async () => {
       const changeName = input.dataset.change;
       const taskId = input.dataset.taskId;

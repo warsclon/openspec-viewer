@@ -7,7 +7,14 @@
     "openspec-viewer": "./dist/cli.js"
   },
   "files": [
-    "dist",
+    "dist/cli.d.ts",
+    "dist/cli.js",
+    "dist/demo.d.ts",
+    "dist/demo.js",
+    "dist/openspec",
+    "dist/server.d.ts",
+    "dist/server.js",
+    "dist/ui",
     "demo",
     "README.md",
     "LICENSE",
