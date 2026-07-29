@@ -26,6 +26,19 @@ async function getJson(server: TestServer, path: string): Promise<{
 }
 
 describe("real HTTP read API", () => {
+  it("serves the shared search contract to the browser", async () => {
+    const server = await start();
+
+    const response = await fetch(`${server.url}/search-contract.js`);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain(
+      "text/javascript",
+    );
+    await expect(response.text()).resolves.toContain(
+      "export function searchDocuments",
+    );
+  });
+
   it("returns health and project information from the isolated fixture", async () => {
     const server = await start();
 

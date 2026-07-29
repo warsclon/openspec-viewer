@@ -14,6 +14,7 @@
     "dist/openspec",
     "dist/server.d.ts",
     "dist/server.js",
+    "dist/shared",
     "dist/ui",
     "demo",
     "README.md",

@@ -5,7 +5,7 @@ import {
   type SearchDocument,
   type SearchHit,
   type SearchHitKind,
-} from "../ui/search-contract.js";
+} from "../shared/search-contract.js";
 import {
   changeDir,
   listSpecFiles,
@@ -15,7 +15,7 @@ import {
 import { listChanges, listMainSpecs, type ChangeSummary } from "./project.js";
 import { readTasksFile } from "./tasks.js";
 
-export type { SearchHit, SearchHitKind } from "../ui/search-contract.js";
+export type { SearchHit, SearchHitKind } from "../shared/search-contract.js";
 
 export function buildSearchDocuments(
   root: ProjectRoot,

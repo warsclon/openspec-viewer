@@ -184,8 +184,21 @@ function serveStatic(res: ServerResponse, urlPath: string) {
   const base = uiDir();
   const rel = urlPath === "/" ? "/index.html" : urlPath;
   const safe = rel.replace(/\.\./g, "");
-  const filePath = join(base, safe);
-  if (!filePath.startsWith(base) || !existsSync(filePath)) {
+  const sharedContract = join(
+    __dirname,
+    "..",
+    "src",
+    "shared",
+    "search-contract.js",
+  );
+  let filePath = join(base, safe);
+  if (safe === "/search-contract.js" && !existsSync(filePath)) {
+    filePath = sharedContract;
+  }
+  if (
+    (filePath !== sharedContract && !filePath.startsWith(base)) ||
+    !existsSync(filePath)
+  ) {
     sendText(res, 404, "Not found");
     return;
   }

@@ -1,4 +1,4 @@
-import type { SearchDocument } from "../ui/search-contract.js";
+import type { SearchDocument } from "../shared/search-contract.js";
 import { readTextIfExists, type ProjectRoot } from "./discover.js";
 import {
   buildSpecChangeGraph,

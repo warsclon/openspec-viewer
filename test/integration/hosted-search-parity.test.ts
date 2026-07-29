@@ -5,7 +5,7 @@ import {
   type HostedSearchDocument,
 } from "../../src/openspec/hosted-demo.js";
 import { searchProject } from "../../src/openspec/search.js";
-import { searchDocuments } from "../../src/ui/search-contract.js";
+import { searchDocuments } from "../../src/shared/search-contract.js";
 import {
   createTestProject,
   type TestProject,
