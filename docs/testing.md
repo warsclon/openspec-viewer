@@ -117,6 +117,24 @@ Pull request #13 established the first live baseline on 2026-07-26:
 All jobs ran in parallel. The observed required path was 57 seconds, well
 within the 10-minute target.
 
+Pull request #22 verified the first `prepare-public-launch` phase on 2026-07-29:
+
+| Displayed check name | Result | Duration |
+| --- | --- | ---: |
+| `quality (Node 20)` | Passed | 31 seconds |
+| `quality (Node 22)` | Passed | 24 seconds |
+| `browser (Chromium)` | Passed | 40 seconds |
+| `package smoke (Node 20)` | Passed | 15 seconds |
+| `package smoke (Node 22)` | Passed | 13 seconds |
+| `OpenSpec 1.6.0 (repository)` | Passed | 8 seconds |
+| `OpenSpec 1.6.0 (demo fixture)` | Passed | 11 seconds |
+| `OpenSpec 1.7.0 (repository)` | Passed | 14 seconds |
+| `OpenSpec 1.7.0 (demo fixture)` | Passed | 7 seconds |
+
+The nine CI jobs ran in parallel and completed with a 40-second slowest job.
+Dependency Review, CodeQL analysis, and the pull-request CodeQL check also
+passed; the complete check set stayed well within the 10-minute target.
+
 ## Foundation closeout evidence
 
 The test-foundation closeout validation ran on 2026-07-26 with these additional

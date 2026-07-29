@@ -27,7 +27,7 @@
   and write path is unavailable
 - [ ] 3.4 Add launch-specific accessibility checks for demo labeling, visual
   alternative text, keyboard flow, and reduced-motion media
-- [ ] 3.5 Run the inherited Node.js 20 and 22, browser, and package checks plus
+- [x] 3.5 Run the inherited Node.js 20 and 22, browser, and package checks plus
   the launch-specific demo matrix and document expected execution time
 
 ## 4. Visual Launch and Positioning
