@@ -5,6 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- Bundled `--demo` workflow backed by an isolated, deterministic fictional
+  OpenSpec project
+- Static read-only demo build for repository-path hosting
+- Browser and package checks for local and hosted demo behavior
+
 ## [0.5.0] - 2026-07-23
 
 ### Added

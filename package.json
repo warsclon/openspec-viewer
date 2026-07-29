@@ -7,13 +7,23 @@
     "openspec-viewer": "./dist/cli.js"
   },
   "files": [
-    "dist",
+    "dist/cli.d.ts",
+    "dist/cli.js",
+    "dist/demo.d.ts",
+    "dist/demo.js",
+    "dist/openspec",
+    "dist/server.d.ts",
+    "dist/server.js",
+    "dist/shared",
+    "dist/ui",
+    "demo",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
   ],
   "scripts": {
     "build": "node scripts/clean.js && tsc && node scripts/copy-ui.js",
+    "build:hosted-demo": "npm run build && node scripts/build-hosted-demo.js",
     "dev": "tsx src/cli.ts",
     "start": "node dist/cli.js",
     "typecheck": "tsc --noEmit",

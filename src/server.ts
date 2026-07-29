@@ -184,8 +184,21 @@ function serveStatic(res: ServerResponse, urlPath: string) {
   const base = uiDir();
   const rel = urlPath === "/" ? "/index.html" : urlPath;
   const safe = rel.replace(/\.\./g, "");
-  const filePath = join(base, safe);
-  if (!filePath.startsWith(base) || !existsSync(filePath)) {
+  const sharedContract = join(
+    __dirname,
+    "..",
+    "src",
+    "shared",
+    "search-contract.js",
+  );
+  let filePath = join(base, safe);
+  if (safe === "/search-contract.js" && !existsSync(filePath)) {
+    filePath = sharedContract;
+  }
+  if (
+    (filePath !== sharedContract && !filePath.startsWith(base)) ||
+    !existsSync(filePath)
+  ) {
     sendText(res, 404, "Not found");
     return;
   }
@@ -197,6 +210,7 @@ type SseClient = { id: number; res: ServerResponse };
 
 export type ServerOptions = {
   root: ProjectRoot;
+  mode?: "demo";
   host?: string;
   port?: number;
   includeArchive?: boolean;
@@ -282,7 +296,18 @@ export function startServer(opts: ServerOptions) {
       }
 
       if (method === "GET" && pathname === "/api/project") {
-        return sendJson(res, 200, getProjectInfo(root));
+        const project = getProjectInfo(root);
+        return sendJson(
+          res,
+          200,
+          opts.mode === "demo"
+            ? {
+                ...project,
+                mode: "demo",
+                label: "Fictional demo project",
+              }
+            : project,
+        );
       }
 
       if (method === "GET" && pathname === "/api/search") {

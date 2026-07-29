@@ -12,8 +12,8 @@ The maintainer changed the repository visibility to public on 2026-07-26 after
 the file-backed hardening reached `main`. The default-branch ruleset is active
 and its positive and negative controls have been verified. Repository security
 settings and safe push-protection evidence have completed their final review.
-Integration least-privilege remediation and the versioned closeout remain
-pending.
+Integration least-privilege remediation was confirmed on 2026-07-28, and the
+versioned hardening change is archived.
 
 Baseline captured on 2026-07-26:
 
@@ -115,8 +115,8 @@ Inventory captured through the GitHub API on 2026-07-26:
 | Actions secrets | None | Keep ordinary CI secret-free |
 | Actions variables | None | Add only a documented, non-sensitive value when required |
 | Environments | None | Create a protected release environment only with an approved release design |
-| GitHub Apps | Manual review in progress; detailed account inventory is not public repository data | Use selected repositories by default; retain account-wide access only as a privately documented exception |
-| OAuth integrations | No repository-scoped API inventory is available | Complete and retain a private account-level purpose and scope review |
+| GitHub Apps | Maintainer review complete; detailed account inventory is not public repository data | Use selected repositories by default; retain account-wide access only as a privately documented exception |
+| OAuth integrations | Private account-level purpose and scope review complete | Re-review retained authorizations periodically |
 
 Do not retain an identity or integration without a current owner, purpose, and
 minimum required permission. A future release environment must isolate package
@@ -124,11 +124,11 @@ publication authority from ordinary CI and must use trusted publishing rather
 than a long-lived npm token.
 
 The repository maintainer is the accountable owner for retained integrations.
-Integration least-privilege remediation remains pending and its
-permission-by-permission inventory is retained privately. OAuth token values,
+Integration least-privilege remediation is complete and its
+permission-by-permission inventory remains private. OAuth token values,
 application identifiers, unrelated private repository names, installation
-identifiers, and the detailed account inventory must not be recorded in this
-public repository.
+identifiers, and the detailed account inventory are not recorded in this public
+repository.
 
 GitHub App installations use selected repositories by default and include only
 the repositories required for their current purpose. Account-wide installation
@@ -355,13 +355,10 @@ Final re-query completed on 2026-07-26:
 - `Protect main` remained active with the eight required checks and the
   documented pull-request-only owner recovery bypass.
 
-Remaining closeout steps:
+Closeout completed on 2026-07-28:
 
-1. Complete the private integration least-privilege remediation and OAuth
-   purpose and scope inventory.
-2. Merge pull request #20 through the protected path.
-3. Archive `harden-github-repository` so its specification is synchronized into
-   `openspec/specs/`.
-
-The final verification section must record the date, result, and non-sensitive
-evidence URL for every control before this OpenSpec change is archived.
+1. The private integration least-privilege and OAuth purpose-and-scope reviews
+   were confirmed without publishing account details.
+2. Pull request #20 merged through the protected path.
+3. Pull request #21 archived `harden-github-repository` and synchronized its
+   specification into `openspec/specs/`.

@@ -54,15 +54,37 @@ let pack: PackResult;
 let installedBin = "";
 let project: TestProject | undefined;
 let cli: CliProcess | undefined;
+const staleHostedOutput = join(
+  repositoryRoot,
+  "dist",
+  "hosted-demo",
+  "stale-demo.txt",
+);
 
 const expectedPackedFiles = [
   "CHANGELOG.md",
   "LICENSE",
   "README.md",
+  "demo/representative-openspec/openspec/changes/add-dark-mode/design.md",
+  "demo/representative-openspec/openspec/changes/add-dark-mode/proposal.md",
+  "demo/representative-openspec/openspec/changes/add-dark-mode/specs/interface/spec.md",
+  "demo/representative-openspec/openspec/changes/add-dark-mode/tasks.md",
+  "demo/representative-openspec/openspec/changes/archive/2026-07-01-legacy-search/proposal.md",
+  "demo/representative-openspec/openspec/changes/archive/2026-07-01-legacy-search/specs/interface/spec.md",
+  "demo/representative-openspec/openspec/changes/archive/2026-07-01-legacy-search/tasks.md",
+  "demo/representative-openspec/openspec/changes/completed-export/proposal.md",
+  "demo/representative-openspec/openspec/changes/completed-export/specs/export/spec.md",
+  "demo/representative-openspec/openspec/changes/completed-export/tasks.md",
+  "demo/representative-openspec/openspec/config.yaml",
+  "demo/representative-openspec/openspec/specs/interface/spec.md",
   "dist/cli.d.ts",
   "dist/cli.js",
+  "dist/demo.d.ts",
+  "dist/demo.js",
   "dist/openspec/discover.d.ts",
   "dist/openspec/discover.js",
+  "dist/openspec/hosted-demo.d.ts",
+  "dist/openspec/hosted-demo.js",
   "dist/openspec/lifecycle-workspace.d.ts",
   "dist/openspec/lifecycle-workspace.js",
   "dist/openspec/mutate.d.ts",
@@ -81,8 +103,12 @@ const expectedPackedFiles = [
   "dist/openspec/watch.js",
   "dist/server.d.ts",
   "dist/server.js",
+  "dist/shared/search-contract.d.ts",
+  "dist/shared/search-contract.js",
   "dist/ui/app.js",
   "dist/ui/index.html",
+  "dist/ui/runtime-config.js",
+  "dist/ui/search-contract.js",
   "dist/ui/styles.css",
   "package.json",
 ].sort();
@@ -102,6 +128,10 @@ beforeAll(() => {
   installDir = join(tempRoot, "install");
   mkdirSync(packDir);
   mkdirSync(installDir);
+  mkdirSync(join(repositoryRoot, "dist", "hosted-demo"), {
+    recursive: true,
+  });
+  writeFileSync(staleHostedOutput, "must not be packed\n", "utf8");
 
   const output = execFileSync(
     "npm",
@@ -151,6 +181,10 @@ afterAll(async () => {
     await cli?.stop();
   } finally {
     project?.cleanup();
+    rmSync(join(repositoryRoot, "dist", "hosted-demo"), {
+      recursive: true,
+      force: true,
+    });
     if (tempRoot) rmSync(tempRoot, { recursive: true, force: true });
   }
 });
@@ -210,6 +244,17 @@ describe("packed and clean-installed CLI", () => {
     expect(
       existsSync(join(packageRoot, "dist", "ui", "index.html")),
     ).toBe(true);
+    expect(
+      existsSync(
+        join(
+          packageRoot,
+          "demo",
+          "representative-openspec",
+          "openspec",
+          "config.yaml",
+        ),
+      ),
+    ).toBe(true);
     expect(existsSync(join(packageRoot, "src"))).toBe(false);
     expect(existsSync(join(packageRoot, "test"))).toBe(false);
     expect(existsSync(join(packageRoot, "openspec"))).toBe(false);
@@ -232,6 +277,7 @@ describe("packed and clean-installed CLI", () => {
     const help = run(["--help"]);
     expect(help.status).toBe(0);
     expect(help.stdout).toContain("Usage:");
+    expect(help.stdout).toContain("--demo");
     expect(help.stdout).toContain("--no-open");
 
     const version = run(["--version"]);
@@ -267,6 +313,30 @@ describe("packed and clean-installed CLI", () => {
     expect(health.status).toBe(200);
     await expect(health.json()).resolves.toEqual({ ok: true, watchers: 0 });
     expect(cli.stdout()).toContain(`UI:       ${cli.url}`);
+    expect(cli.stderr()).toBe("");
+
+    const exit = await cli.stop();
+    expect(exit.forced).toBe(false);
+    expect(exit.signal).toBe("SIGTERM");
+  });
+
+  it("starts the bundled demo through the installed binary", async () => {
+    cli = await startCliProcess({
+      executable: installedBin,
+      args: ["--demo"],
+      cwd: installDir,
+    });
+
+    const project = await fetch(`${cli.url}/api/project`).then((response) =>
+      response.json(),
+    );
+    expect(project).toMatchObject({
+      mode: "demo",
+      label: "Fictional demo project",
+    });
+    expect(cli.stdout()).toContain(
+      "project:  Fictional demo project (temporary copy)",
+    );
     expect(cli.stderr()).toBe("");
 
     const exit = await cli.stop();

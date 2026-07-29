@@ -13,7 +13,9 @@ describe("package metadata", () => {
     expect(pkg.license).toBe("MIT");
     expect(pkg.bin["openspec-viewer"]).toBe("./dist/cli.js");
     expect(pkg.engines.node).toMatch(/>=\s*20/);
-    expect(pkg.files).toContain("dist");
+    expect(pkg.files).toEqual(
+      expect.arrayContaining(["dist/cli.js", "dist/openspec", "dist/ui"]),
+    );
   });
 
   it("prints the package version through the public CLI", () => {
@@ -65,6 +67,19 @@ describe("source CLI arguments", () => {
     });
     expect(parseArgs(["--no-archive", "--archive"]).archive).toBe(true);
     expect(parseArgs(["--port", "0"]).port).toBe(0);
+  });
+
+  it("parses demo mode and rejects an ambiguous project path", () => {
+    expect(parseArgs(["--demo"])).toMatchObject({
+      demo: true,
+      path: process.cwd(),
+    });
+    expect(() => parseArgs(["--demo", "../project"])).toThrow(
+      "--demo cannot be combined with a project path",
+    );
+    expect(() => parseArgs(["--demo", "--path", "../project"])).toThrow(
+      "--demo cannot be combined with a project path",
+    );
   });
 
   it("rejects unknown options and invalid ports", () => {
@@ -121,6 +136,7 @@ describe("source CLI arguments", () => {
     const help = run(["--help"]);
     expect(help.status).toBe(0);
     expect(help.stdout).toContain("Usage:");
+    expect(help.stdout).toContain("--demo");
     expect(help.stdout).toContain("--no-open");
 
     const unknown = run(["--unknown"]);

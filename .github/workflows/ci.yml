@@ -15,6 +15,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  openspec-compatibility:
+    name: OpenSpec ${{ matrix.openspec-version }} (${{ matrix.target.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        openspec-version: ["1.6.0", "1.7.0"]
+        target:
+          - name: repository
+            path: .
+          - name: demo fixture
+            path: demo/representative-openspec
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+
+      - name: Validate with OpenSpec ${{ matrix.openspec-version }}
+        working-directory: ${{ matrix.target.path }}
+        run: npx --yes @fission-ai/openspec@${{ matrix.openspec-version }} validate --all --strict --no-interactive
+
   quality:
     name: quality (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest

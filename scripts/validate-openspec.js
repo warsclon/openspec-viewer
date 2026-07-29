@@ -8,7 +8,7 @@ const openspecCli = fileURLToPath(
 const projects = [
   repositoryRoot,
   fileURLToPath(
-    new URL("../test/fixtures/representative-openspec", import.meta.url),
+    new URL("../demo/representative-openspec", import.meta.url),
   ),
 ];
 

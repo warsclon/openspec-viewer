@@ -1,8 +1,15 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
-import { readFileSync, realpathSync } from "node:fs";
+import {
+  readFileSync,
+  realpathSync,
+} from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  createTemporaryDemoProject,
+  type TemporaryDemoProject,
+} from "./demo.js";
 import { findOpenspecRoot } from "./openspec/discover.js";
 import { startServer, type ServerOptions } from "./server.js";
 
@@ -25,6 +32,7 @@ Options:
   -p, --port <n>     Port (default: 4321; 0 selects an ephemeral port)
   --host <host>      Host (default: 127.0.0.1)
   --path <dir>       Project to scan (default: cwd)
+  --demo             Open the bundled fictional project in a temporary copy
   --no-archive       Hide archived changes (shown by default)
   --no-open          Do not open the browser
   -h, --help         Show help
@@ -32,6 +40,7 @@ Options:
 
 Examples:
   openspec-viewer
+  openspec-viewer --demo
   openspec-viewer ../my-project
   openspec-viewer --port 5173 --path ./apps/api
 `;
@@ -41,6 +50,7 @@ export function parseArgs(argv: string[], cwd = process.cwd()) {
     port: 4321,
     host: "127.0.0.1",
     path: cwd,
+    demo: false,
     archive: true,
     open: true,
     help: false,
@@ -48,11 +58,13 @@ export function parseArgs(argv: string[], cwd = process.cwd()) {
   };
 
   const rest: string[] = [];
+  let explicitPath = false;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--help" || a === "-h") opts.help = true;
     else if (a === "--version" || a === "-V") opts.version = true;
     else if (a === "--no-open") opts.open = false;
+    else if (a === "--demo") opts.demo = true;
     else if (a === "--no-archive") opts.archive = false;
     else if (a === "--archive") opts.archive = true;
     else if (a === "--port" || a === "-p") {
@@ -63,7 +75,10 @@ export function parseArgs(argv: string[], cwd = process.cwd()) {
           : Number.NaN;
     }
     else if (a === "--host") opts.host = argv[++i] ?? opts.host;
-    else if (a === "--path") opts.path = resolve(cwd, argv[++i] ?? ".");
+    else if (a === "--path") {
+      explicitPath = true;
+      opts.path = resolve(cwd, argv[++i] ?? ".");
+    }
     else if (a.startsWith("-")) {
       throw new Error(`Unknown option: ${a}`);
     } else {
@@ -71,7 +86,13 @@ export function parseArgs(argv: string[], cwd = process.cwd()) {
     }
   }
 
-  if (rest[0]) opts.path = resolve(cwd, rest[0]);
+  if (rest[0]) {
+    explicitPath = true;
+    opts.path = resolve(cwd, rest[0]);
+  }
+  if (opts.demo && explicitPath) {
+    throw new Error("--demo cannot be combined with a project path");
+  }
   if (!Number.isInteger(opts.port) || opts.port < 0 || opts.port > 65535) {
     throw new Error(`Invalid port: ${opts.port}`);
   }
@@ -130,19 +151,47 @@ export async function runCli(
     return undefined;
   }
 
-  const root = findOpenspecRoot(opts.path);
-  const server = await (dependencies.start ?? startServer)({
-    root,
-    host: opts.host,
-    port: opts.port,
-    includeArchive: opts.archive,
-  });
+  const demoProject: TemporaryDemoProject | undefined = opts.demo
+    ? createTemporaryDemoProject()
+    : undefined;
+  let started: Awaited<ReturnType<typeof startServer>>;
+  let root;
+  try {
+    root = findOpenspecRoot(demoProject?.projectDir ?? opts.path);
+    const server = await (dependencies.start ?? startServer)({
+      root,
+      host: opts.host,
+      port: opts.port,
+      includeArchive: opts.archive,
+      mode: opts.demo ? "demo" : undefined,
+    });
+    let closePromise: Promise<void> | undefined;
+    started = {
+      url: server.url,
+      close: () => {
+        closePromise ??= (async () => {
+          try {
+            await server.close();
+          } finally {
+            demoProject?.cleanup();
+          }
+        })();
+        return closePromise;
+      },
+    };
+  } catch (error) {
+    demoProject?.cleanup();
+    throw error;
+  }
+  const server = started;
   const { url } = server;
 
   log("");
   log("  OpenSpec Viewer");
-  log(`  project:  ${root.projectDir}`);
-  log(`  openspec: ${root.openspecDir}`);
+  log(
+    `  project:  ${opts.demo ? "Fictional demo project (temporary copy)" : root.projectDir}`,
+  );
+  log(`  openspec: ${opts.demo ? "isolated demo data" : root.openspecDir}`);
   log(`  UI:       ${url}`);
   log("");
   log("  Ctrl+C to quit · live reload on · ⌘K/Ctrl+K search · #/change/… deep links");
@@ -169,8 +218,23 @@ function isDirectExecution(): boolean {
 }
 
 if (isDirectExecution()) {
-  runCli(process.argv.slice(2)).catch((err) => {
-    console.error(err instanceof Error ? err.message : err);
-    process.exit(1);
-  });
+  runCli(process.argv.slice(2))
+    .then((server) => {
+      if (!server) return;
+      const shutdown = (signal: NodeJS.Signals) => {
+        void server.close().finally(() => {
+          process.off("SIGINT", onSigint);
+          process.off("SIGTERM", onSigterm);
+          process.kill(process.pid, signal);
+        });
+      };
+      const onSigint = () => shutdown("SIGINT");
+      const onSigterm = () => shutdown("SIGTERM");
+      process.once("SIGINT", onSigint);
+      process.once("SIGTERM", onSigterm);
+    })
+    .catch((err) => {
+      console.error(err instanceof Error ? err.message : err);
+      process.exit(1);
+    });
 }
