@@ -31,7 +31,7 @@ type HostedSnapshot = {
     kind: string;
     id: string;
     title: string;
-    text: string;
+    fields: Array<{ text: string; weight: number }>;
   }>;
 };
 
@@ -53,7 +53,7 @@ describe("hosted demo build", () => {
     for (const file of [
       "index.html",
       "app.js",
-      "hosted-search.js",
+      "search-contract.js",
       "styles.css",
       "runtime-config.js",
       "snapshot.json",

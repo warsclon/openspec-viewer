@@ -1,4 +1,4 @@
-import { hostedSearch } from "./hosted-search.js";
+import { searchDocuments } from "./search-contract.js";
 
 const PREFS_THEME = "osv:theme";
 const PREFS_FONT = "osv:fontScale";
@@ -152,7 +152,7 @@ async function hostedApi(path, options) {
     const query = url.searchParams.get("q") || "";
     return {
       query,
-      hits: hostedSearch(snapshot.searchDocuments, query),
+      hits: searchDocuments(snapshot.searchDocuments, query),
     };
   }
   const detailMatch = path.match(/^\/api\/changes\/([^/]+)$/);

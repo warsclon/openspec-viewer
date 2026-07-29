@@ -104,9 +104,10 @@ const expectedPackedFiles = [
   "dist/server.d.ts",
   "dist/server.js",
   "dist/ui/app.js",
-  "dist/ui/hosted-search.js",
   "dist/ui/index.html",
   "dist/ui/runtime-config.js",
+  "dist/ui/search-contract.d.ts",
+  "dist/ui/search-contract.js",
   "dist/ui/styles.css",
   "package.json",
 ].sort();

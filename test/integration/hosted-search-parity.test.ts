@@ -5,7 +5,7 @@ import {
   type HostedSearchDocument,
 } from "../../src/openspec/hosted-demo.js";
 import { searchProject } from "../../src/openspec/search.js";
-import { hostedSearch } from "../../src/ui/hosted-search.js";
+import { searchDocuments } from "../../src/ui/search-contract.js";
 import {
   createTestProject,
   type TestProject,
@@ -32,13 +32,14 @@ describe("hosted search parity", () => {
   it.each([
     "add-dark-mode",
     "browser state",
+    "export",
     "theme selector",
     "interface",
   ])("matches local search result ordering for %s", (query) => {
     const root = findOpenspecRoot(project.projectDir);
     const localIds = searchProject(root, query).map((hit) => hit.id);
     const hostedIds = (
-      hostedSearch(documents, query) as HostedSearchHit[]
+      searchDocuments(documents, query) as HostedSearchHit[]
     ).map((hit) => hit.id);
 
     expect(hostedIds).toEqual(localIds);
