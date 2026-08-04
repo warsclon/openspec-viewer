@@ -8,3 +8,8 @@ test-results/
 *.tgz
 *.log
 .DS_Store
+
+# `npm run capture:media` regenerates everything here. Committing an asset is a
+# deliberate act: add it as an exception below, after it has been curated.
+docs/media/*
+!docs/media/hero.png
