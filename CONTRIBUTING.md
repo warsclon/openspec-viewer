@@ -45,6 +45,18 @@ npm run test:openspec
   thresholds, and failure diagnosis.
 - User-facing strings and docs should be in **English**.
 - Do not commit secrets, real project notes under `.openspec-viewer/`, or generated `dist/` files (CI builds from source).
+- `npm run capture:media` writes to `docs/media/`, which is ignored except for
+  the curated `hero.png`. Commit a generated asset only after optimizing it,
+  adding an explicit `.gitignore` exception for it.
+
+## OpenSpec agent instructions
+
+This repository uses [OpenSpec](https://github.com/Fission-AI/OpenSpec) for
+spec-driven development, and the generated agent instructions are committed on
+purpose: `.claude/`, `.codex/`, `.opencode/`, and `.pi/` give contributors the
+same `opsx` commands and skills without running `openspec init` themselves.
+They are generated files — regenerate them with the OpenSpec CLI rather than
+editing them by hand.
 
 ## Commit style
 
