@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
-import { createServer as createNetServer } from "node:net";
+import { connect, createServer as createNetServer } from "node:net";
 import type { AddressInfo } from "node:net";
+import { setTimeout as delay } from "node:timers/promises";
 import { afterEach, describe, expect, it } from "vitest";
 import { findOpenspecRoot } from "../../src/openspec/discover.js";
 import type { WatchFactory } from "../../src/openspec/watch.js";
@@ -35,6 +36,42 @@ describe("server lifecycle", () => {
     await server.close();
     expect(existsSync(server.projectDir)).toBe(false);
     await expect(server.close()).resolves.toBeUndefined();
+  });
+
+  it("shuts down while a client socket is still mid-request", async () => {
+    const server = await startTestServer();
+    servers.push(server);
+    const { port } = new URL(server.url);
+
+    // A browser tab that dies mid-request leaves the socket in a state that
+    // http.Server.close() waits on forever, so shutdown must not depend on the
+    // peer completing its request.
+    const socket = connect(Number(port), "127.0.0.1");
+    await new Promise<void>((resolve, reject) => {
+      socket.once("connect", () => resolve());
+      socket.once("error", reject);
+    });
+    await new Promise<void>((resolve, reject) => {
+      socket.write("GET /api/project HTTP/1.1\r\nHost: localhost\r\n", (error) =>
+        error ? reject(error) : resolve(),
+      );
+    });
+    // The server must have accepted the socket and started parsing before
+    // shutdown begins, or the test races past the condition it covers.
+    await delay(250);
+
+    const started = Date.now();
+    await expect(
+      Promise.race([
+        server.close(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("shutdown hung")), 5_000),
+        ),
+      ]),
+    ).resolves.toBeUndefined();
+    expect(Date.now() - started).toBeLessThan(5_000);
+    expect(existsSync(server.projectDir)).toBe(false);
+    socket.destroy();
   });
 
   it("isolates concurrent servers and temporary projects", async () => {

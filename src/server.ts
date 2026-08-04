@@ -28,6 +28,9 @@ import { watchOpenspec, type WatchFactory } from "./openspec/watch.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+/** How long shutdown waits for in-flight requests before destroying sockets. */
+const SHUTDOWN_GRACE_MS = 500;
+
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -562,6 +565,14 @@ export function startServer(opts: ServerOptions) {
               }
               sseClients.clear();
               server.close((e) => (e ? rejClose(e) : resClose()));
+              // close() alone waits forever on sockets that are mid-request or
+              // mid-response, which a dead browser tab can leave behind. Drop
+              // idle sockets at once and give live ones a short grace period.
+              server.closeIdleConnections();
+              setTimeout(
+                () => server.closeAllConnections(),
+                SHUTDOWN_GRACE_MS,
+              ).unref();
             });
             return closePromise;
           },
