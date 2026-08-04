@@ -91,6 +91,45 @@ The same journey runs in CI through `test/browser/launch-media.spec.ts`, and
 `test/browser/accessibility.spec.ts` covers demo labeling, visual naming,
 keyboard flow, and reduced-motion behavior for the launch surface.
 
+## First release, published 2026-08-04
+
+`@warsclon/openspec-viewer@0.6.0` is on npm with signed provenance, together
+with the `v0.6.0` tag and its GitHub Release.
+
+npm cannot register a trusted publisher for a package that does not exist yet
+([npm/cli#8544](https://github.com/npm/cli/issues/8544)), so the first version
+could not authenticate through OIDC. Publishing it by hand would have produced
+no provenance, because provenance can only be generated in CI. It was therefore
+published by a one-shot `workflow_dispatch` workflow using a short-lived
+granular token, which ran the full validation first. The token was revoked and
+the `NPM_TOKEN` secret deleted immediately afterwards, and the workflow was
+removed. Every later release goes through `release.yml` with no token at all.
+
+Verified against the published package, not the repository:
+
+| Check | Result |
+| --- | --- |
+| Clean install from the registry | Installs one package with no runtime dependencies |
+| `npx @warsclon/openspec-viewer@0.6.0` | Reports `0.6.0` |
+| Global install into an isolated prefix | Links `openspec-viewer` to `dist/cli.js` and runs |
+| `npm audit signatures` | Verified registry signature and verified attestation |
+| Registry metadata | MIT, repository and homepage links correct, 49 files, 227 KB |
+
+README rendering was confirmed visually by the maintainer, since npmjs.com
+returns 403 to automated requests: the page renders correctly and npm resolved
+the repository-relative hero image on its own. The hero was still changed to an
+absolute `raw.githubusercontent.com` URL as a defensive measure for registries
+and mirrors that do not resolve relative paths — not because anything was
+broken. That change reaches the npm page only with the next published version,
+because npm freezes the README per version.
+
+Two environment gotchas found while releasing, both fixed:
+
+- Node 22 still bundles npm 10, but trusted publishing needs npm >= 11.5.1, so
+  the publish job upgrades npm first.
+- npm 12 reports `npm pack --json` as an object keyed by package name while
+  npm 10 reports an array; the package smoke test now accepts both.
+
 ## Pending external prerequisites
 
 1. ~~Authenticate the maintainer's npm account and verify control of the
@@ -99,15 +138,11 @@ keyboard flow, and reduced-motion behavior for the launch surface.
 2. Enable GitHub Pages, run the constrained manual deployment workflow, and
    verify the public repository-path URL before setting the homepage or
    enabling automatic deployment from `main`.
-3. Configure npm trusted publishing only after the scoped package identity and
-   protected release environment are ready. The repository side is implemented
-   in `.github/workflows/release.yml`; before the first `vX.Y.Z` tag the
-   maintainer must:
-   - create the `release` GitHub environment (optionally with a required
-     reviewer) so the publish job runs behind a protected boundary;
-   - register the trusted publisher for `@warsclon/openspec-viewer` on
-     npmjs.com (repository `warsclon/openspec-viewer`, workflow
-     `release.yml`, environment `release`) so `npm publish --provenance`
-     authenticates through OIDC without any long-lived npm token.
+3. ~~Configure npm trusted publishing.~~ Done 2026-08-04: the `release`
+   environment exists and the trusted publisher is registered for
+   `@warsclon/openspec-viewer` (repository `warsclon/openspec-viewer`, workflow
+   `release.yml`, environment `release`). The OIDC path itself is exercised for
+   the first time by the next `vX.Y.Z` tag; until then it is configured but
+   unproven.
 4. Set repository homepage, topics, social preview, and release metadata only
    after their target artifacts are publicly verifiable.

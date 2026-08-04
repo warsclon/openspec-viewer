@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](https://nodejs.org)
 
-![OpenSpec Viewer showing the Now view: the next incomplete task for the active add-dark-mode change, with progress stats, change list with status badges, and main specs in the sidebar](docs/media/hero.png)
+![OpenSpec Viewer showing the Now view: the next incomplete task for the active add-dark-mode change, with progress stats, change list with status badges, and main specs in the sidebar](https://raw.githubusercontent.com/warsclon/openspec-viewer/main/docs/media/hero.png)
 
 ## Try it in one command
 
