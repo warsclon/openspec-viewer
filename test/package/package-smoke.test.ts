@@ -142,7 +142,9 @@ beforeAll(() => {
       encoding: "utf8",
     },
   );
-  [pack] = JSON.parse(output) as PackResult[];
+  // npm 10 reports an array; npm 12 reports an object keyed by package name.
+  const packed = JSON.parse(output) as PackResult[] | Record<string, PackResult>;
+  [pack] = Array.isArray(packed) ? packed : Object.values(packed);
   tarballPath = join(packDir, pack.filename);
 
   writeFileSync(
