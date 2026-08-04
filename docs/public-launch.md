@@ -16,8 +16,8 @@ configuration that is still pending.
 | Pull requests | No open pull requests | No dependency backlog blocks launch work |
 | GitHub Releases | No releases | Create the first release only through the validated tag workflow |
 | GitHub Pages | Not configured | Selected hosting target after base-path and hash-route verification |
-| npm package | `@warsclon/openspec-viewer` is not currently published | Verify scope control before changing package identity |
-| npm authentication | The local npm session is not authenticated | The maintainer must authenticate before scope ownership or trusted publishing can be verified |
+| npm package | `@warsclon/openspec-viewer` is not currently published (registry returns 404) | Final scoped package name confirmed as `@warsclon/openspec-viewer`; safe to change package identity |
+| npm authentication | Authenticated as `warsclon`, owner of the `warsclon` npm scope (verified 2026-08-04 via `npm whoami` and `npm org ls warsclon`) | Scope control verified; trusted publishing can be configured during the release phase |
 
 The archived `harden-github-repository` change is the source of truth for
 dependency monitoring, secret scanning, workflow permissions, integration
@@ -93,12 +93,21 @@ keyboard flow, and reduced-motion behavior for the launch surface.
 
 ## Pending external prerequisites
 
-1. Authenticate the maintainer's npm account and verify control of the
-   `@warsclon` scope.
+1. ~~Authenticate the maintainer's npm account and verify control of the
+   `@warsclon` scope.~~ Done 2026-08-04: authenticated as `warsclon`, scope
+   owner confirmed, `@warsclon/openspec-viewer` unpublished and available.
 2. Enable GitHub Pages, run the constrained manual deployment workflow, and
    verify the public repository-path URL before setting the homepage or
    enabling automatic deployment from `main`.
 3. Configure npm trusted publishing only after the scoped package identity and
-   protected release environment are ready.
+   protected release environment are ready. The repository side is implemented
+   in `.github/workflows/release.yml`; before the first `vX.Y.Z` tag the
+   maintainer must:
+   - create the `release` GitHub environment (optionally with a required
+     reviewer) so the publish job runs behind a protected boundary;
+   - register the trusted publisher for `@warsclon/openspec-viewer` on
+     npmjs.com (repository `warsclon/openspec-viewer`, workflow
+     `release.yml`, environment `release`) so `npm publish --provenance`
+     authenticates through OIDC without any long-lived npm token.
 4. Set repository homepage, topics, social preview, and release metadata only
    after their target artifacts are publicly verifiable.

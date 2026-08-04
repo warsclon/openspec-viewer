@@ -9,7 +9,7 @@ import { openBrowser, parseArgs } from "../src/cli.js";
 describe("package metadata", () => {
   it("exposes bin, license, and engines", () => {
     const pkg = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf8"));
-    expect(pkg.name).toBe("openspec-viewer");
+    expect(pkg.name).toBe("@warsclon/openspec-viewer");
     expect(pkg.license).toBe("MIT");
     expect(pkg.bin["openspec-viewer"]).toBe("./dist/cli.js");
     expect(pkg.engines.node).toMatch(/>=\s*20/);

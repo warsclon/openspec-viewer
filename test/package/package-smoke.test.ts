@@ -191,7 +191,7 @@ afterAll(async () => {
 
 describe("packed and clean-installed CLI", () => {
   it("contains only intended public files with an executable CLI", () => {
-    expect(pack.name).toBe("openspec-viewer");
+    expect(pack.name).toBe("@warsclon/openspec-viewer");
     expect(pack.version).toBe(packageJson.version);
     expect(pack.entryCount).toBe(pack.files.length);
     expect(existsSync(tarballPath)).toBe(true);
@@ -216,6 +216,7 @@ describe("packed and clean-installed CLI", () => {
     const packageRoot = join(
       installDir,
       "node_modules",
+      "@warsclon",
       "openspec-viewer",
     );
     const installedPackage = JSON.parse(
@@ -235,9 +236,8 @@ describe("packed and clean-installed CLI", () => {
     expect(installedPackage.dependencies ?? {}).toEqual(
       packageJson.dependencies ?? {},
     );
-    expect(readFileSync(join(packageRoot, "README.md"), "utf8")).toContain(
-      "# openspec-viewer",
-    );
+    const readme = readFileSync(join(packageRoot, "README.md"), "utf8");
+    expect(readme).toMatch(/^# openspec[- ]viewer/im);
     expect(readFileSync(join(packageRoot, "LICENSE"), "utf8")).toContain(
       "MIT License",
     );
