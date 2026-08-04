@@ -1,6 +1,6 @@
 ## 1. Launch Prerequisites
 
-- [ ] 1.1 Verify control of the intended npm scope and record the final scoped package name
+- [x] 1.1 Verify control of the intended npm scope and record the final scoped package name
 - [x] 1.2 Choose and document the static hosting target after testing base-path and hash-route behavior
 - [x] 1.3 Define the supported Node.js and OpenSpec version matrix from current behavior and compatibility checks
 - [x] 1.4 Inventory current GitHub settings, open dependency pull requests, metadata, and release state as the launch baseline
@@ -44,12 +44,12 @@
 
 ## 5. Scoped Package and Releases
 
-- [ ] 5.1 Change package identity to the verified scope while preserving the `openspec-viewer` executable
-- [ ] 5.2 Update installation and execution examples to use only the scoped package identity
-- [ ] 5.3 Extend package-content checks to cover fixture/static assets, executable mode, license, version, and sensitive-file exclusions
-- [ ] 5.4 Add release version and tag agreement checks that fail before any publication step
+- [x] 5.1 Change package identity to the verified scope while preserving the `openspec-viewer` executable
+- [x] 5.2 Update installation and execution examples to use only the scoped package identity
+- [x] 5.3 Extend package-content checks to cover fixture/static assets, executable mode, license, version, and sensitive-file exclusions
+- [x] 5.4 Add release version and tag agreement checks that fail before any publication step
 - [ ] 5.5 Configure npm trusted publishing with minimal GitHub permissions and no long-lived npm token
-- [ ] 5.6 Add a tag-only release workflow that runs the complete validation and package installation sequence
+- [x] 5.6 Add a tag-only release workflow that runs the complete validation and package installation sequence
 - [ ] 5.7 Publish npm provenance and create GitHub Release notes from the changelog only after validation succeeds
 - [ ] 5.8 Test the documented `npx` and global-install flows against the published scoped package
 - [ ] 5.9 Verify package ownership, repository links, license, README rendering, provenance, and executable behavior on npm
