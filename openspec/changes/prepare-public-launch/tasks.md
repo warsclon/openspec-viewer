@@ -48,11 +48,11 @@
 - [x] 5.2 Update installation and execution examples to use only the scoped package identity
 - [x] 5.3 Extend package-content checks to cover fixture/static assets, executable mode, license, version, and sensitive-file exclusions
 - [x] 5.4 Add release version and tag agreement checks that fail before any publication step
-- [ ] 5.5 Configure npm trusted publishing with minimal GitHub permissions and no long-lived npm token
+- [x] 5.5 Configure npm trusted publishing with minimal GitHub permissions and no long-lived npm token
 - [x] 5.6 Add a tag-only release workflow that runs the complete validation and package installation sequence
-- [ ] 5.7 Publish npm provenance and create GitHub Release notes from the changelog only after validation succeeds
-- [ ] 5.8 Test the documented `npx` and global-install flows against the published scoped package
-- [ ] 5.9 Verify package ownership, repository links, license, README rendering, provenance, and executable behavior on npm
+- [x] 5.7 Publish npm provenance and create GitHub Release notes from the changelog only after validation succeeds
+- [x] 5.8 Test the documented `npx` and global-install flows against the published scoped package
+- [x] 5.9 Verify package ownership, repository links, license, README rendering, provenance, and executable behavior on npm
 
 ## 6. Repository Trust and Security
 
