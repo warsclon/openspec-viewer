@@ -5,7 +5,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
-  timeout: 30_000,
+  // The budget covers fixture setup, the test body, and teardown together.
+  // Shared CI runners need more headroom than a developer machine.
+  timeout: process.env.CI ? 90_000 : 30_000,
   expect: {
     timeout: 5_000,
   },

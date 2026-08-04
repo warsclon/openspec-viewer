@@ -72,6 +72,25 @@ the caller's project.
 The fixture passed strict validation with OpenSpec 1.6.0 and 1.7.0 on
 2026-07-29.
 
+## Launch media capture workflow
+
+`npm run capture:media` regenerates every launch asset from the shared
+deterministic fixture. The script starts an isolated temporary demo project,
+drives the Now → Graph → task-interaction journey defined in
+`test/helpers/capture-journey.ts` at a fixed 1280×800 dark-theme viewport with
+reduced motion, and writes to `docs/media/`:
+
+- `hero.png` — primary README screenshot (Now view);
+- `journey-now.png`, `journey-graph.png`, `journey-tasks.png` — per-step frames;
+- `social-preview.png` — raw 1280×640 frame for the social preview composition;
+- `workflow.webm` — the recorded Now → Graph → task journey.
+
+The journey fails if an expected control is missing or if any rendered page
+contains machine paths, so stale fixtures cannot silently produce launch media.
+The same journey runs in CI through `test/browser/launch-media.spec.ts`, and
+`test/browser/accessibility.spec.ts` covers demo labeling, visual naming,
+keyboard flow, and reduced-motion behavior for the launch surface.
+
 ## Pending external prerequisites
 
 1. Authenticate the maintainer's npm account and verify control of the

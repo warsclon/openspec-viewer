@@ -24,6 +24,7 @@
   "scripts": {
     "build": "node scripts/clean.js && tsc && node scripts/copy-ui.js",
     "build:hosted-demo": "npm run build && node scripts/build-hosted-demo.js",
+    "capture:media": "tsx scripts/capture-launch-media.ts",
     "dev": "tsx src/cli.ts",
     "start": "node dist/cli.js",
     "typecheck": "tsc --noEmit",
