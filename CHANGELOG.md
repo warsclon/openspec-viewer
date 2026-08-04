@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-04
+
 ### Added
 
 - Bundled `--demo` workflow backed by an isolated, deterministic fictional
@@ -27,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `openspec-viewer` executable name is unchanged
 - README rewritten around the browser-workspace value proposition with a hero
   screenshot, one-command quickstart, and an `openspec view` comparison
+
+### Fixed
+
+- Shutdown no longer hangs when a client socket is left mid-request, so
+  `Ctrl+C` reliably stops the CLI
 
 ## [0.5.0] - 2026-07-23
 

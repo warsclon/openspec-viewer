@@ -1,4 +1,4 @@
-import { rmSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { runCli } from "../../src/cli.js";
@@ -9,6 +9,10 @@ import {
 } from "../helpers/fixture.js";
 
 const projects: TestProject[] = [];
+
+const { version: packageVersion } = JSON.parse(
+  readFileSync(join(process.cwd(), "package.json"), "utf8"),
+) as { version: string };
 
 afterEach(() => {
   for (const project of projects.splice(0)) project.cleanup();
@@ -117,7 +121,7 @@ describe("source CLI composition", () => {
     });
 
     expect(help.join("\n")).toContain("Usage:");
-    expect(version).toEqual(["0.5.0"]);
+    expect(version).toEqual([packageVersion]);
     expect(starts).toBe(0);
     expect(opens).toBe(0);
   });

@@ -119,6 +119,12 @@ jobs:
           cache: npm
           registry-url: https://registry.npmjs.org
 
+      # Node 22 still bundles npm 10, which cannot authenticate through OIDC.
+      - name: Use an npm that supports trusted publishing
+        run: |
+          npm install -g npm@latest
+          npm --version
+
       - name: Install exactly from lockfile
         run: npm ci
 

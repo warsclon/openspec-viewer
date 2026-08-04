@@ -1,6 +1,6 @@
 {
   "name": "@warsclon/openspec-viewer",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Local web UI CLI to visualize and manage OpenSpec changes and tasks",
   "type": "module",
   "bin": {
