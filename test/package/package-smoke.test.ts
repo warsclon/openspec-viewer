@@ -237,7 +237,8 @@ describe("packed and clean-installed CLI", () => {
       packageJson.dependencies ?? {},
     );
     const readme = readFileSync(join(packageRoot, "README.md"), "utf8");
-    expect(readme).toMatch(/^# openspec[- ]viewer/im);
+    expect(readme).toContain("# OpenSpec Viewer");
+    expect(readme).toContain("npx @warsclon/openspec-viewer");
     expect(readFileSync(join(packageRoot, "LICENSE"), "utf8")).toContain(
       "MIT License",
     );

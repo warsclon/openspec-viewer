@@ -13,6 +13,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   OpenSpec project
 - Static read-only demo build for repository-path hosting
 - Browser and package checks for local and hosted demo behavior
+- Scripted launch media capture (`npm run capture:media`) driving the shared
+  Now → Graph → task journey against the demo fixture
+- Launch accessibility checks for demo labeling, visual naming, keyboard flow,
+  and reduced-motion behavior
+- Reduced-motion support in the web UI via `prefers-reduced-motion`
+- Tag-only release workflow with full validation, npm trusted publishing with
+  provenance, and GitHub Release notes generated from this changelog
+
+### Changed
+
+- Package identity is now the scoped `@warsclon/openspec-viewer`; the
+  `openspec-viewer` executable name is unchanged
+- README rewritten around the browser-workspace value proposition with a hero
+  screenshot, one-command quickstart, and an `openspec view` comparison
 
 ## [0.5.0] - 2026-07-23
 

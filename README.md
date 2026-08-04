@@ -1,47 +1,84 @@
-# openspec-viewer
+# OpenSpec Viewer
 
-Local web UI for [OpenSpec](https://github.com/Fission-AI/OpenSpec) projects.
-
-OpenSpec already ships `openspec view` (terminal dashboard). This tool is the browser version: browse changes, track tasks, edit artifacts, and keep an eye on project evolution while your coding agent works.
+**A browser workspace for [OpenSpec](https://github.com/Fission-AI/OpenSpec) projects.** See what to build next, watch progress live while your coding agent works, and manage changes, tasks, and specs — without leaving the browser.
 
 [![CI](https://github.com/warsclon/openspec-viewer/actions/workflows/ci.yml/badge.svg)](https://github.com/warsclon/openspec-viewer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](https://nodejs.org)
 
-## Features
+![OpenSpec Viewer showing the Now view: the next incomplete task for the active add-dark-mode change, with progress stats, change list with status badges, and main specs in the sidebar](docs/media/hero.png)
 
-- Discovers `openspec/` from the current directory (or `--path`)
-- **Active + archived** changes with filters
-- Views: **Now** (next incomplete task), **Graph** (specs ↔ changes), **Timeline**, **Board**, **Detail**
-- **Live reload** via `fs.watch` + Server-Sent Events
-- **Global search** (`⌘K` / `Ctrl+K`) across changes, tasks, proposal, design, specs
-- **Spec diff** tab (ADDED / MODIFIED / REMOVED requirements)
-- **Deep links**: `#/next`, `#/graph?spec=…`, `#/change/<name>/diff`
-- Edit **proposal / design / tasks** (markdown split preview)
-- Task CRUD + reorder → writes clean `tasks.md`
-- Create changes and archive (via `openspec` CLI when available)
-- **Local notes** per change under `.openspec-viewer/` (gitignored)
+## Try it in one command
 
-## Requirements
+```bash
+# in a project that contains openspec/
+npx @warsclon/openspec-viewer
 
-- Node.js **20+**
-- Optional: [`@fission-ai/openspec`](https://www.npmjs.com/package/@fission-ai/openspec) CLI for create/archive integration
+# no OpenSpec project yet? Explore a fictional one
+npx @warsclon/openspec-viewer --demo
+```
+
+The CLI starts a local server on `127.0.0.1`, opens your browser, and live-reloads as files change on disk. Everything runs on your machine; nothing is uploaded anywhere.
+
+## What you can do
+
+- **Answer "what now?"** — the **Now** view surfaces the next incomplete task for every active change, ordered by momentum.
+- **See the shape of the project** — the **Graph** view links specs to the changes that touch them; **Timeline** and **Board** show history and status at a glance.
+- **Work on artifacts in place** — edit proposal, design, and tasks with markdown preview; add, reorder, and check off tasks and get clean `tasks.md` writes.
+- **Follow your agent live** — file watching plus Server-Sent Events update the UI the moment a task is checked or an artifact changes.
+- **Find anything** — global search (`⌘K` / `Ctrl+K`) across changes, tasks, proposals, designs, and specs.
+- **Inspect spec deltas** — the **Diff** tab shows ADDED / MODIFIED / REMOVED requirements per change.
+- **Keep private context** — per-change local notes live under `.openspec-viewer/` (gitignored), even for archived changes.
+
+## OpenSpec Viewer vs `openspec view`
+
+OpenSpec ships `openspec view`, a terminal dashboard. Both read the same `openspec/` directory; they fit different moments:
+
+| Workflow | `openspec view` | OpenSpec Viewer |
+|----------|-----------------|-----------------|
+| Quick status check in the terminal | ✅ Instant, no server | Runs a local server first |
+| Watching progress while an agent works | Re-run to refresh | ✅ Live reload via SSE |
+| Editing proposal / design / tasks | Use your editor | ✅ In-place editing with preview |
+| Navigating spec ↔ change relationships | Text listing | ✅ Interactive graph with deep links |
+| Sharing a view with a deep link | — | ✅ `#/graph?spec=…`, `#/change/<name>/diff` |
+
+If you live in the terminal and just want status, `openspec view` is great. Reach for the browser workspace when you're editing artifacts, tracking live activity, or exploring the graph.
+
+## Supported versions
+
+| Surface | Supported |
+|---------|-----------|
+| Node.js runtime | 20 and 22 release lines (`>=20`) |
+| OpenSpec CLI integration | Validated against OpenSpec **1.6.0** and **1.7.0** |
+
+The viewer reads compatible OpenSpec filesystem layouts directly and does not require the OpenSpec CLI. Installing [`@fission-ai/openspec`](https://www.npmjs.com/package/@fission-ai/openspec) enables the optional create-change and archive integrations. Other OpenSpec versions may work but are not part of the support claim.
+
+## Demo mode, privacy, and writes
+
+- **Demo mode (`--demo`)** copies a bundled fictional project into a temporary directory and opens it with a visible "Demo mode" badge. Edits affect only that isolated copy and are discarded on exit — your working directory is never touched, and the temporary machine path is never displayed.
+- **Hosted read-only demo** — a static build of the same fictional project, for exploring the UI without installing anything. It is clearly labeled "Read-only demo" and every mutation control is removed; only the local CLI writes files.
+- **Privacy** — local-first by design. The server binds to `127.0.0.1`, there is no telemetry, no analytics, no network calls beyond your own browser talking to your own machine, and the published package has zero runtime dependencies.
+- **What gets written where** — active changes write to their own `proposal.md`, `design.md`, and `tasks.md`. Archived changes are read-only. Local notes go to `.openspec-viewer/` in the project root (gitignored).
 
 ## Install
 
 ```bash
-# from source
+# one-off
+npx @warsclon/openspec-viewer
+
+# or globally
+npm install -g @warsclon/openspec-viewer
+openspec-viewer
+```
+
+From source:
+
+```bash
 git clone https://github.com/warsclon/openspec-viewer.git
 cd openspec-viewer
 npm install
 npm run build
 npm link
-```
-
-Or run without linking:
-
-```bash
-npm start -- --path /path/to/your-project
 ```
 
 ## Usage
@@ -59,13 +96,6 @@ openspec-viewer --no-archive   # hide archived changes
 # explore fictional data without an existing OpenSpec project
 openspec-viewer --demo
 ```
-
-`--demo` copies the bundled fictional project into a temporary directory.
-Edits and task mutations affect only that isolated copy and are discarded when
-the CLI exits. The sidebar identifies demo content and does not display the
-temporary machine path. This local demo remains writable so the full workflow
-can be explored; the future hosted demo is separately constrained to read-only
-behavior.
 
 Development (TypeScript, no build step):
 
@@ -149,6 +179,7 @@ npm run build
 | `npm run test:browser` | Run critical UI journeys in deterministic Chromium |
 | `npm run test:openspec` | Strictly validate active changes and the fictional fixture |
 | `npm run test:package` | Pack, clean-install, and smoke-test the published CLI |
+| `npm run capture:media` | Regenerate launch media from the demo fixture |
 | `npm run prepublishOnly` | Run the complete package validation gate |
 | `npm run typecheck` | `tsc --noEmit` |
 
