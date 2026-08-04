@@ -1,0 +1,128 @@
+# ONE-SHOT WORKFLOW — DELETE AFTER THE FIRST RELEASE.
+#
+# npm cannot configure a trusted publisher for a package that does not exist
+# yet (npm/cli#8544), so the very first version cannot authenticate through
+# OIDC. This workflow publishes it with a short-lived granular token while
+# still producing provenance, then creates the matching tag and GitHub Release.
+#
+# It creates the tag with GITHUB_TOKEN on purpose: tags pushed by that token do
+# not trigger `release.yml`, which would otherwise try to publish the same
+# version again and fail.
+#
+# After a successful run: delete the NPM_TOKEN secret, revoke the token on
+# npmjs.com, configure the trusted publisher, and delete this file. Every later
+# release goes through `release.yml` with no token at all.
+name: Bootstrap first publish
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bootstrap-first-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: validate and publish the first version
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      # Provenance with token auth needs a current npm, same as OIDC does.
+      - name: Use a current npm
+        run: |
+          npm install -g npm@latest
+          npm --version
+
+      - name: Resolve the version to publish
+        id: resolve
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Publishing $version"
+
+      - name: Verify version and changelog agree
+        env:
+          VERSION: ${{ steps.resolve.outputs.version }}
+        run: node scripts/verify-release-tag.js "v$VERSION"
+
+      - name: Fail if the version is already published
+        env:
+          VERSION: ${{ steps.resolve.outputs.version }}
+        run: |
+          if npm view "@warsclon/openspec-viewer@$VERSION" version >/dev/null 2>&1; then
+            echo "::error::$VERSION is already on npm. Use release.yml instead."
+            exit 1
+          fi
+
+      - name: Install exactly from lockfile
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit and integration tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Validate OpenSpec projects
+        run: npm run test:openspec
+
+      - name: Verify packed and clean-installed CLI
+        run: npm run test:package
+
+      - name: Publish with provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
+
+  github-release:
+    name: tag and create the GitHub Release
+    needs: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Extract release notes from CHANGELOG.md
+        env:
+          VERSION: ${{ needs.publish.outputs.version }}
+        run: node scripts/extract-release-notes.js "$VERSION" > release-notes.md
+
+      - name: Create the tag and GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.publish.outputs.version }}
+        run: |
+          gh release create "v$VERSION" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "v$VERSION" \
+            --notes-file release-notes.md
