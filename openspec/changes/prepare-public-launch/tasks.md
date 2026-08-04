@@ -21,18 +21,18 @@
 
 - [x] 3.1 Complete and archive `establish-test-foundation` before relying on CI
   as a public-launch or repository-ruleset gate
-- [ ] 3.2 Extend the shared deterministic fixture and browser harness only with
+- [x] 3.2 Extend the shared deterministic fixture and browser harness only with
   launch-specific demo, hosted read-only, and media-capture scenarios
 - [x] 3.3 Test hosted-demo read-only behavior and ensure every mutation control
   and write path is unavailable
-- [ ] 3.4 Add launch-specific accessibility checks for demo labeling, visual
+- [x] 3.4 Add launch-specific accessibility checks for demo labeling, visual
   alternative text, keyboard flow, and reduced-motion media
 - [x] 3.5 Run the inherited Node.js 20 and 22, browser, and package checks plus
   the launch-specific demo matrix and document expected execution time
 
 ## 4. Visual Launch and Positioning
 
-- [ ] 4.1 Implement the scripted browser capture journey using only the deterministic demo fixture
+- [x] 4.1 Implement the scripted browser capture journey using only the deterministic demo fixture
 - [ ] 4.2 Generate and optimize the primary README screenshot with machine paths and sensitive data checks
 - [ ] 4.3 Generate the short Now-to-Graph-to-task workflow recording and verify it renders on GitHub
 - [ ] 4.4 Create a social preview composition from real UI output at GitHub's recommended dimensions

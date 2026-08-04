@@ -21,7 +21,10 @@ test("serves the complete read-only workflow from a repository base path", async
   try {
     await page.goto(`${server.url}#/next`);
 
-    await expect(page.getByText("Read-only demo", { exact: true })).toBeVisible();
+    const demoIndicator = page.locator("#demo-indicator");
+    await expect(demoIndicator).toBeVisible();
+    await expect(demoIndicator).toHaveText("Read-only demo");
+    await expect(demoIndicator).toHaveAttribute("role", "status");
     await expect(page.locator("#project-path")).toHaveText(
       "Fictional demo project",
     );
