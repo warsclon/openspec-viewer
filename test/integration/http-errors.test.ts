@@ -1,6 +1,6 @@
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   closeTestServers,
   startTestServer,
@@ -261,5 +261,45 @@ describe("real HTTP error contract", () => {
     });
 
     expect(readFileSync(tasksPath, "utf8")).toBe(before);
+  });
+
+  it("keeps a system error's absolute path out of the response body", async () => {
+    const server = await start();
+    // A directory where the root .gitignore belongs makes the read of it fail
+    // with EISDIR: deterministic, and independent of filesystem permissions,
+    // which CI containers do not always honour. The local-state directory has
+    // its own guard for this shape, so it cannot be used to reach a raw
+    // system error.
+    mkdirSync(join(server.projectDir, ".gitignore"), { recursive: true });
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    try {
+      const result = await requestJson(
+        server,
+        "/api/changes/add-dark-mode/notes",
+        json("PUT", { content: "probe" }),
+      );
+
+      expect(result.response.status).toBe(500);
+      expect(result.body).toEqual({
+        error:
+          "A local file or process operation failed. See the terminal running openspec-viewer for details.",
+      });
+      // The point of the test: the operator's paths stay on the operator's
+      // machine. Asserting the generic string alone would still pass if the
+      // path were appended to it.
+      const serialized = JSON.stringify(result.body);
+      expect(serialized).not.toContain(server.projectDir);
+      expect(serialized).not.toContain(".openspec-viewer");
+      expect(serialized).not.toContain("EISDIR");
+
+      // The detail is not discarded, it is redirected to the terminal.
+      expect(logged).toHaveBeenCalledWith(
+        "openspec-viewer request failed:",
+        expect.objectContaining({ syscall: expect.any(String) }),
+      );
+    } finally {
+      logged.mockRestore();
+    }
   });
 });

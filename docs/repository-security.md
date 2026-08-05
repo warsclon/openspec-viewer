@@ -447,6 +447,37 @@ The npm trusted publisher is registered against repository
 so npm enforces the same boundary from its side. That path is configured but
 still unproven: it is first exercised by the next `vX.Y.Z` tag.
 
+### Code scanning alert 1, `js/stack-trace-exposure`
+
+CodeQL flagged the JSON error response in `src/server.ts` as exposing
+stack-trace-derived information. Confirmed by reproduction rather than by
+reading the rule: making the local-state directory unwritable and writing a
+note returned
+
+```
+500 {"error":"EACCES: permission denied, open '/var/folders/…/project/.openspec-viewer/.gitignore'"}
+```
+
+so a Node system error put an absolute filesystem path into an HTTP body.
+
+The fix separates errors this project raises from errors it does not. Node
+attaches `syscall` to filesystem, network, and child-process failures; those
+now log to the operator's terminal and return a fixed message. Every
+deliberate message keeps its text, including OpenSpec CLI stderr, which the UI
+surfaces on purpose and which two integration tests assert.
+
+Scope of the original exposure, stated plainly rather than inflated: the
+server binds to `127.0.0.1` by default, has no authentication, and shows the
+project path in its own UI, so on a default run the reader of the path already
+owned it. The exposure mattered only for `--host` values other than loopback —
+where, it should be said, an unauthenticated write API is the larger problem,
+and a leaked path the smaller one. It was still worth fixing: a 500 from an
+unexpected failure has no reason to carry a machine path.
+
+Regression covered by `test/integration/http-errors.test.ts`, which asserts
+the generic body, the absence of the project path, and that the detail still
+reaches `console.error`. It was verified to fail without the fix.
+
 ### Clean-clone evidence, revalidated 2026-08-05
 
 A fresh single-branch clone of `main` at
