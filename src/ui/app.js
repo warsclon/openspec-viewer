@@ -860,10 +860,11 @@ function showDialog({ title, bodyHtml, okLabel = "OK", danger = false }) {
     ok.onclick = () => cleanup(true);
     $("#dialog-cancel").onclick = () => cleanup(false);
     modal.addEventListener("keydown", onKeydown);
-    setTimeout(() => {
-      const firstField = modal.querySelector("input:not([disabled]), textarea:not([disabled])");
-      (firstField || ok).focus();
-    }, 0);
+    // Focus synchronously. Deferring this by a tick let the dialog steal focus
+    // out from under whoever started typing first, moving their keystrokes to
+    // another field.
+    const firstField = modal.querySelector("input:not([disabled]), textarea:not([disabled])");
+    (firstField || ok).focus();
   });
 }
 

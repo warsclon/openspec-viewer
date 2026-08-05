@@ -468,6 +468,10 @@ test("keeps primary keyboard controls named, visibly focused, and restores dialo
   await expect(newChange).toBeFocused();
 
   await page.keyboard.press("Enter");
+  // The dialog owns focus before anything is typed. Asserting it here is what
+  // keeps a regression in that ordering from silently redirecting keystrokes
+  // into the next field instead of failing.
+  await expect(page.getByLabel("Name (kebab-case)")).toBeFocused();
   await page.getByLabel("Name (kebab-case)").fill("browser-created-change");
   await page
     .getByLabel("Description (optional)")
