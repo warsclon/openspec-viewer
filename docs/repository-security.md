@@ -272,6 +272,14 @@ gh api repos/warsclon/openspec-viewer/actions/variables \
 
 gh api repos/warsclon/openspec-viewer/environments \
   --jq '{total_count,names:[.environments[].name]}'
+
+# Repeat for every environment returned above. An environment with no
+# protection rules is not a boundary, however narrow the workflow trigger is.
+gh api repos/warsclon/openspec-viewer/environments/REPLACE_WITH_ENVIRONMENT \
+  --jq '{name,protection_rules,deployment_branch_policy}'
+
+gh api repos/warsclon/openspec-viewer/environments/REPLACE_WITH_ENVIRONMENT/deployment-branch-policies \
+  --jq '{total_count,policies:[.branch_policies[] | {name,type}]}'
 ```
 
 The vulnerability-alert endpoint returns success with an empty body when
@@ -362,3 +370,101 @@ Closeout completed on 2026-07-28:
 2. Pull request #20 merged through the protected path.
 3. Pull request #21 archived `harden-github-repository` and synchronized its
    specification into `openspec/specs/`.
+
+## Public re-audit, 2026-08-05
+
+The read-only audit procedure above was re-run in full after the first release,
+the launch media, and the roadmap reached `main`. Every control held:
+
+| Control | Result |
+| --- | --- |
+| Visibility and default branch | `public`, `main` |
+| Secret scanning and push protection | Enabled |
+| Non-provider patterns and validity checks | Still `disabled` — unavailable on this plan, unchanged |
+| Dependabot alerts and security updates | Enabled, not paused |
+| Dependency graph | SPDX 2.3 SBOM, 214 packages |
+| Private vulnerability reporting | Enabled |
+| Actions policy | `selected`; GitHub-owned allowed, verified-marketplace disallowed, no extra patterns |
+| Default workflow token | `read`, cannot approve pull-request reviews |
+| `Protect main` ruleset | Active, eight required contexts, strict up-to-date policy, linear history, squash/rebase only, owner-only `pull_request` bypass |
+| Collaborators, teams, deploy keys, webhooks | Owner only; none, none, none |
+| Actions secrets and variables | **Zero of each** |
+
+Three differences from the 2026-07-26 baseline, all expected:
+
+- **CodeQL now analyses `actions` as well as `javascript-typescript`.** GitHub
+  extended the default setup; the added coverage is workflow analysis, which is
+  strictly more scanning.
+- **The `release` environment exists** (previously zero environments), created
+  for the release design.
+- **`NPM_TOKEN` is gone.** The secret list is empty, confirming the one-shot
+  bootstrap token was deleted after the first publish rather than left behind.
+  Releases now authenticate through OIDC with no stored credential.
+
+The SBOM reports 214 packages against 215 at the 2026-07-26 final re-query.
+That is dependency drift in development dependencies, not a control change.
+
+GitHub Pages returned `404 Not Found`, so no Pages site exists yet. Recorded as
+evidence of the current state, not as a passing control: `pages.yml` is present
+and its deploy job is already scoped to `pages: write` and `id-token: write`
+behind the GitHub-managed `github-pages` environment, but nothing has been
+deployed. Re-check this row once the demo is published.
+
+### Release authority boundary
+
+Verified job by job. Every workflow declares `contents: read` at the top level,
+and no job widens that except the two publishing jobs:
+
+| Workflow | Job | Permissions | Boundary |
+| --- | --- | --- | --- |
+| `release.yml` | `verify-tag`, `validate`, `browser` | inherit `contents: read` | — |
+| `release.yml` | `publish` | `contents: read`, `id-token: write` | `environment: release` |
+| `release.yml` | `github-release` | `contents: write` | `environment: release` |
+| `pages.yml` | build | `contents: read`, `pages: read` | — |
+| `pages.yml` | deploy | `pages: write`, `id-token: write` | `environment: github-pages` |
+| `ci.yml`, `dependency-review.yml` | all | `contents: read` | — |
+
+The audit found two gaps in that boundary, both fixed on 2026-08-05:
+
+1. **The `release` environment had no protection rules and no deployment
+   branch policy.** It gated nothing: any ref reaching a job that named it
+   could have deployed. It now carries a `branch_policy` rule restricting
+   deployments to tags matching `v*`, which is the same shape as the workflow's
+   `v[0-9]+.[0-9]+.[0-9]+` trigger. The tag trigger alone was never the
+   boundary — it is workflow content, changeable in a pull request, whereas the
+   environment policy is repository configuration.
+2. **`github-release` held `contents: write` outside any environment.**
+   Creating a GitHub Release is publishing authority, so it now sits behind
+   `environment: release` like the npm publish.
+
+Required reviewers on the `release` environment were deliberately **not**
+added: with a single maintainer, self-approval is theatre rather than a
+control. Revisit when a second maintainer exists, at which point it becomes a
+real four-eyes check.
+
+The npm trusted publisher is registered against repository
+`warsclon/openspec-viewer`, workflow `release.yml`, and environment `release`,
+so npm enforces the same boundary from its side. That path is configured but
+still unproven: it is first exercised by the next `vX.Y.Z` tag.
+
+### Clean-clone evidence, revalidated 2026-08-05
+
+A fresh single-branch clone of `main` at
+`28e5b99d8e54ef377cd846de4bacf55e81df0938` was inspected after the demo,
+media, hosted-site, and release assets landed. It holds 169 tracked files
+across 34 reachable commits.
+
+- No tracked `.env`, `dist`, `node_modules`, coverage, Playwright output,
+  `.openspec-viewer`, credential, key, archive, or log paths.
+- Gitleaks 8.30.1 reported no leaks in the working tree and none across all 34
+  commits, both scans redacted.
+- A content search for machine paths matched only
+  `test/media-guard.test.ts`, whose fixtures are the fictional
+  `/Users/someone` and `/var/folders/ab` used to prove the scanner detects
+  them. No real path appears in any tracked file.
+- The three committed binary assets — `hero.png`, `workflow.gif`,
+  `social-preview.png` — were re-scanned in the clone with
+  `scripts/lib/media-guard.ts` and carry no home directory, temporary
+  directory, or account username in their metadata.
+
+The temporary clone was removed after verification.
