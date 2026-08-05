@@ -4,6 +4,25 @@ Thanks for helping improve openspec-viewer.
 
 By participating, you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 
+## Where to start
+
+- **[ROADMAP.md](ROADMAP.md)** — what is committed, what is next, and what is
+  still an exploratory idea. Items under `Later` need a design conversation
+  before code.
+- **[Issues labeled `good first issue`](https://github.com/warsclon/openspec-viewer/labels/good%20first%20issue)**
+  — scoped so you can finish them independently. Each one states its acceptance
+  criteria and the checks it has to pass. `help wanted` issues are real work
+  too, just less self-contained.
+- **Questions** go in a [GitHub issue](https://github.com/warsclon/openspec-viewer/issues/new)
+  with the `question` label. Discussions is intentionally off while the project
+  is small, so there is one place to look. Security reports are the exception:
+  follow the [Security Policy](SECURITY.md) and do not open a public issue.
+- **The demo fixture** in `demo/representative-openspec/` is fictional and
+  deterministic, with active, complete, and archived changes, delta specs, and
+  graph edges. Run `npm run dev -- --demo` to get a working project without
+  touching your own. Demo mode copies the fixture into a temporary directory,
+  so edits are discarded on exit and the committed fixture never changes.
+
 ## Development setup
 
 ```bash
@@ -28,21 +47,6 @@ npm run dev -- --path /path/to/project --no-open
 - Follow test-driven development for production behavior changes: add a focused
   failing test at a public seam, implement the smallest fix, and run the
   relevant regression layer.
-- Run before opening a PR:
-
-```bash
-npm run typecheck
-npm run test:coverage
-npm run build
-npm run test:openspec
-```
-
-- Install the test browser once with `npx playwright install chromium`, then run
-  `npm run test:browser` for browser UI or end-to-end workflow changes.
-- Run `npm run prepublishOnly` for CLI, build, packaging, release, or public
-  installation changes.
-- See [Testing](docs/testing.md) for fixture policy, commands, coverage
-  thresholds, and failure diagnosis.
 - User-facing strings and docs should be in **English**.
 - Do not commit secrets, real project notes under `.openspec-viewer/`, or generated `dist/` files (CI builds from source).
 - `npm run capture:media` regenerates the launch media from the demo fixture.
@@ -52,6 +56,29 @@ npm run test:openspec
   everything else in it is an intermediate. Commit a new generated asset only
   after the script optimizes and byte-scans it, adding an explicit
   `.gitignore` exception for it.
+
+## Checks
+
+Run this before opening any pull request:
+
+```bash
+npm run typecheck
+npm run test:coverage
+npm run build
+npm run test:openspec
+```
+
+Then add the seam that matches what you touched. These are the same gates CI
+enforces, so running them locally is the fastest way to a green pull request:
+
+| If you changed | Also run |
+|----------------|----------|
+| Browser UI or an end-to-end workflow | `npx playwright install chromium` once, then `npm run test:browser` |
+| The CLI, build, packaging, release, or install path | `npm run prepublishOnly` |
+| Launch media | `npm run capture:media` (needs `ffmpeg`) |
+
+See [Testing](docs/testing.md) for the fixture policy, coverage thresholds, and
+how to diagnose a failure.
 
 ## OpenSpec agent instructions
 

@@ -142,11 +142,51 @@ Social preview**.
 | Description | `A browser workspace for OpenSpec projects — browse changes, manage tasks, edit specs, and follow your coding agent live.` |
 | Topics | `openspec`, `spec-driven-development`, `cli`, `dashboard`, `typescript`, `ai-agents` |
 | Homepage | Still unset — it is set to the hosted demo URL only after Pages is deployed and verified |
-| Social preview | Asset generated at `docs/media/social-preview.png`; upload is manual |
+| Social preview | Uploaded 2026-08-05 from `docs/media/social-preview.png` |
 
 The description and topics were applied through the GitHub API and match the
-README positioning. The homepage and social preview remain pending because one
-depends on a deployment that has not happened and the other has no API.
+README positioning. The homepage stays unset until the hosted demo is deployed
+and verified.
+
+The social preview had to be uploaded by hand because the GitHub REST API has
+no endpoint for it. Upload verified from the public repository page: its
+`og:image` resolves to `repository-images.githubusercontent.com`, which GitHub
+serves only for a custom upload — an auto-generated card would come from
+`opengraph.githubassets.com`.
+
+README media rendering was verified on `main` after merge, against the public
+repository page rather than a local preview:
+
+| Asset | Served | In the rendered README | Alt text |
+| --- | --- | --- | --- |
+| `hero.png` | 200, `image/png`, 58 KB | `<img>` present | Present, descriptive |
+| `workflow.gif` | 200, `image/gif`, 591 KB | `<img>` present | Present, descriptive |
+
+The GIF is a valid `GIF89a` with a `NETSCAPE2.0` loop extension over 36 frames,
+so it animates and loops inline instead of rendering as a static poster.
+GitHub serves `raw.githubusercontent.com` images directly; only the shields.io
+badges are proxied through camo.
+
+## Roadmap and contributor entry points, 2026-08-05
+
+`ROADMAP.md` publishes Now / Next / Later, with `Later` explicitly marked as
+exploratory and not open for contribution. The initial issues are:
+
+| Issue | Roadmap tier | Labels |
+| --- | --- | --- |
+| #34 Explain how to recover when the port is already in use | Next | `good first issue`, `enhancement` |
+| #35 Add keyboard shortcuts for switching between views | Next | `good first issue`, `enhancement` |
+| #36 Verify Windows and macOS support in CI | Next | `help wanted` |
+| #37 Explore: publish a read-only snapshot of a real project | Later | `enhancement` only |
+
+Each carries context, bounded scope, acceptance criteria, and the exact checks
+it must pass. #36 is deliberately not a starter issue: it will surface real
+cross-platform bugs and deciding which to fix versus document is a judgement
+call. #37 carries no contribution label at all and says so in its first line,
+because its scope is unresolved — it exists to collect use cases.
+
+Until Discussions is enabled, the question channel is a GitHub issue with the
+`question` label, documented in `CONTRIBUTING.md`.
 
 ## First release, published 2026-08-04
 
