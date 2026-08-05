@@ -20,6 +20,8 @@ npx @warsclon/openspec-viewer --demo
 
 The CLI starts a local server on `127.0.0.1`, opens your browser, and live-reloads as files change on disk. Everything runs on your machine; nothing is uploaded anywhere.
 
+![Recording of the demo project: starting on the Now view with the next task, switching to the Graph view and focusing the interface spec, then opening the add-dark-mode change and checking off a task](https://raw.githubusercontent.com/warsclon/openspec-viewer/main/docs/media/workflow.gif)
+
 ## What you can do
 
 - **Answer "what now?"** — the **Now** view surfaces the next incomplete task for every active change, ordered by momentum.

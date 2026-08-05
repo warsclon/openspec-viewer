@@ -45,9 +45,13 @@ npm run test:openspec
   thresholds, and failure diagnosis.
 - User-facing strings and docs should be in **English**.
 - Do not commit secrets, real project notes under `.openspec-viewer/`, or generated `dist/` files (CI builds from source).
-- `npm run capture:media` writes to `docs/media/`, which is ignored except for
-  the curated `hero.png`. Commit a generated asset only after optimizing it,
-  adding an explicit `.gitignore` exception for it.
+- `npm run capture:media` regenerates the launch media from the demo fixture.
+  It needs `ffmpeg` on `PATH` (macOS: `brew install ffmpeg`) to optimize the
+  screenshots and encode the animation. `docs/media/` is ignored except for the
+  three committed assets (`hero.png`, `workflow.gif`, `social-preview.png`);
+  everything else in it is an intermediate. Commit a new generated asset only
+  after the script optimizes and byte-scans it, adding an explicit
+  `.gitignore` exception for it.
 
 ## OpenSpec agent instructions
 

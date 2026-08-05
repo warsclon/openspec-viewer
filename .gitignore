@@ -13,3 +13,5 @@ test-results/
 # deliberate act: add it as an exception below, after it has been curated.
 docs/media/*
 !docs/media/hero.png
+!docs/media/workflow.gif
+!docs/media/social-preview.png
