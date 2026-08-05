@@ -58,12 +58,12 @@
 
 - [x] 6.1 Complete and archive `harden-github-repository` as the source of truth
   for dependency, secret, workflow, access, and default-branch controls
-- [ ] 6.2 Re-run its versioned repository-security audit after the repository
+- [x] 6.2 Re-run its versioned repository-security audit after the repository
   becomes public and retain launch-specific Pages and release configuration
   evidence
-- [ ] 6.3 Verify release workflows add write or identity permissions only at a
+- [x] 6.3 Verify release workflows add write or identity permissions only at a
   separately reviewed publishing job and protected environment boundary
-- [ ] 6.4 Confirm the inherited clean-clone security evidence remains valid
+- [x] 6.4 Confirm the inherited clean-clone security evidence remains valid
   after adding demo, media, hosted-site, and release assets
 
 ## 7. Contributor Experience
