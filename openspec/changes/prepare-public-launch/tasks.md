@@ -20,15 +20,10 @@
 ## 3. Public-Seam Verification
 
 - [x] 3.1 Complete and archive `establish-test-foundation` before relying on CI
-  as a public-launch or repository-ruleset gate
 - [x] 3.2 Extend the shared deterministic fixture and browser harness only with
-  launch-specific demo, hosted read-only, and media-capture scenarios
 - [x] 3.3 Test hosted-demo read-only behavior and ensure every mutation control
-  and write path is unavailable
 - [x] 3.4 Add launch-specific accessibility checks for demo labeling, visual
-  alternative text, keyboard flow, and reduced-motion media
 - [x] 3.5 Run the inherited Node.js 20 and 22, browser, and package checks plus
-  the launch-specific demo matrix and document expected execution time
 
 ## 4. Visual Launch and Positioning
 
@@ -57,14 +52,9 @@
 ## 6. Repository Trust and Security
 
 - [x] 6.1 Complete and archive `harden-github-repository` as the source of truth
-  for dependency, secret, workflow, access, and default-branch controls
 - [x] 6.2 Re-run its versioned repository-security audit after the repository
-  becomes public and retain launch-specific Pages and release configuration
-  evidence
 - [x] 6.3 Verify release workflows add write or identity permissions only at a
-  separately reviewed publishing job and protected environment boundary
 - [x] 6.4 Confirm the inherited clean-clone security evidence remains valid
-  after adding demo, media, hosted-site, and release assets
 
 ## 7. Contributor Experience
 
@@ -75,14 +65,13 @@
 - [x] 7.5 Configure Dependabot groups for compatible patch/minor npm updates and GitHub Actions updates
 - [x] 7.6 Keep major dependency updates isolated and document the required compatibility review
 - [x] 7.7 Review the existing Dependabot pull requests and close, merge, or supersede each with a recorded reason
-- [ ] 7.8 Decide whether Discussions has enough expected usage to enable now; otherwise document the current question channel
 
 ## 8. Public Launch Validation
 
-- [ ] 8.1 Deploy the read-only demo and set the verified public URL as the repository homepage
-- [ ] 8.2 Run README instructions from a clean machine or isolated environment with no source checkout
-- [ ] 8.3 Verify the screenshot, animation, social preview, badges, links, package commands, and accessibility text on GitHub
+- [x] 8.1 Deploy the read-only demo and set the verified public URL as the repository homepage
+- [x] 8.2 Run README instructions from a clean machine or isolated environment with no source checkout
+- [x] 8.3 Verify the screenshot, animation, social preview, badges, links, package commands, and accessibility text on GitHub
 - [x] 8.4 Verify required CI and security checks on a representative pull request after the ruleset is active
-- [ ] 8.5 Verify the package and GitHub Release from a fresh external install and record the tested versions
-- [ ] 8.6 Confirm GitHub community health, topics, roadmap issues, contribution paths, and dependency activity are publicly legible
+- [x] 8.5 Verify the package and GitHub Release from a fresh external install and record the tested versions
+- [x] 8.6 Confirm GitHub community health, topics, roadmap issues, contribution paths, and dependency activity are publicly legible
 - [ ] 8.7 Update the changelog and publish the launch announcement with demo, installation, release, and contribution links

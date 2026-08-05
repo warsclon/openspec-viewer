@@ -8,6 +8,8 @@
 
 ![OpenSpec Viewer showing the Now view: the next incomplete task for the active add-dark-mode change, with progress stats, change list with status badges, and main specs in the sidebar](https://raw.githubusercontent.com/warsclon/openspec-viewer/main/docs/media/hero.png)
 
+**[Try the live demo →](https://warsclon.github.io/openspec-viewer/)** — a read-only build with fictional data. Nothing to install.
+
 ## Try it in one command
 
 ```bash
@@ -58,7 +60,7 @@ The viewer reads compatible OpenSpec filesystem layouts directly and does not re
 ## Demo mode, privacy, and writes
 
 - **Demo mode (`--demo`)** copies a bundled fictional project into a temporary directory and opens it with a visible "Demo mode" badge. Edits affect only that isolated copy and are discarded on exit — your working directory is never touched, and the temporary machine path is never displayed.
-- **Hosted read-only demo** — a static build of the same fictional project, for exploring the UI without installing anything. It is clearly labeled "Read-only demo" and every mutation control is removed; only the local CLI writes files.
+- **[Hosted read-only demo](https://warsclon.github.io/openspec-viewer/)** — a static build of the same fictional project, for exploring the UI without installing anything. It is clearly labeled "Read-only demo" and every mutation control is removed; only the local CLI writes files.
 - **Privacy** — local-first by design. The server binds to `127.0.0.1`, there is no telemetry, no analytics, no network calls beyond your own browser talking to your own machine, and the published package has zero runtime dependencies.
 - **What gets written where** — active changes write to their own `proposal.md`, `design.md`, and `tasks.md`. Archived changes are read-only. Local notes go to `.openspec-viewer/` in the project root (gitignored).
 
