@@ -94,6 +94,25 @@ function decodePathSegment(value: string): string {
   }
 }
 
+/** Sent instead of a system error's text, which carries absolute paths. */
+const SYSTEM_ERROR_MESSAGE =
+  "A local file or process operation failed. See the terminal running openspec-viewer for details.";
+
+/**
+ * Node attaches `syscall` to filesystem, network, and child-process failures,
+ * and their messages embed absolute paths: `EACCES: permission denied, open
+ * '/Users/…'`. Those are the errors this server did not author, so their text
+ * goes to the operator's terminal rather than into an HTTP response. Every
+ * message the project raises deliberately — including OpenSpec CLI stderr,
+ * which the UI surfaces on purpose — is a plain Error and stays visible.
+ */
+function isSystemError(error: unknown): error is NodeJS.ErrnoException {
+  return (
+    error instanceof Error &&
+    typeof (error as NodeJS.ErrnoException).syscall === "string"
+  );
+}
+
 function errorStatus(error: unknown): number {
   if (error instanceof HttpRequestError) return error.status;
   if (!(error instanceof Error)) return 500;
@@ -533,6 +552,13 @@ export function startServer(opts: ServerOptions) {
 
       sendJson(res, 404, { error: "Not found" });
     } catch (err) {
+      if (isSystemError(err)) {
+        // The operator owns the terminal. The HTTP client may not be the
+        // operator once --host is something other than loopback.
+        console.error("openspec-viewer request failed:", err);
+        sendJson(res, 500, { error: SYSTEM_ERROR_MESSAGE });
+        return;
+      }
       const message = err instanceof Error ? err.message : String(err);
       sendJson(res, errorStatus(err), { error: message });
     }
