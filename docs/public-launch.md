@@ -119,8 +119,9 @@ Sensitive-data protection is split across the two places a leak can happen:
 GitHub renders an animated GIF inline from a plain Markdown image; it does not
 render a repository-relative `.webm` that way. The recording is therefore
 transcoded to GIF for the README, at 800px — GitHub's rendered README width, so
-no browser downscaling — for roughly 950 KB. The `.webm` master stays in
-`docs/media/` as an ignored intermediate.
+no browser downscaling. The current encode is 36 frames over 3.6 s for 591 KB;
+the exact size moves a little between runs because the recording length does.
+The `.webm` master stays in `docs/media/` as an ignored intermediate.
 
 ### Social preview
 
