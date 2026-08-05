@@ -74,4 +74,4 @@
 - [x] 8.4 Verify required CI and security checks on a representative pull request after the ruleset is active
 - [x] 8.5 Verify the package and GitHub Release from a fresh external install and record the tested versions
 - [x] 8.6 Confirm GitHub community health, topics, roadmap issues, contribution paths, and dependency activity are publicly legible
-- [ ] 8.7 Update the changelog and publish the launch announcement with demo, installation, release, and contribution links
+- [x] 8.7 Update the changelog and publish the launch announcement with demo, installation, release, and contribution links
