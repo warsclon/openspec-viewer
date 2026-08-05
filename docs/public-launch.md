@@ -78,18 +78,75 @@ The fixture passed strict validation with OpenSpec 1.6.0 and 1.7.0 on
 deterministic fixture. The script starts an isolated temporary demo project,
 drives the Now → Graph → task-interaction journey defined in
 `test/helpers/capture-journey.ts` at a fixed 1280×800 dark-theme viewport with
-reduced motion, and writes to `docs/media/`:
+reduced motion, and writes to `docs/media/`. Three assets are committed:
 
-- `hero.png` — primary README screenshot (Now view);
-- `journey-now.png`, `journey-graph.png`, `journey-tasks.png` — per-step frames;
-- `social-preview.png` — raw 1280×640 frame for the social preview composition;
-- `workflow.webm` — the recorded Now → Graph → task journey.
+| Asset | What it is |
+| --- | --- |
+| `hero.png` | Primary README screenshot, 1280×800 Now view |
+| `workflow.gif` | Now → Graph → task recording, 800px wide at 10 fps |
+| `social-preview.png` | Composed 1280×640 social card |
+
+Everything else it writes — `journey-{now,graph,tasks}.png`, `social-frame.png`,
+`workflow.webm` — is an intermediate and stays ignored.
 
 The journey fails if an expected control is missing or if any rendered page
 contains machine paths, so stale fixtures cannot silently produce launch media.
 The same journey runs in CI through `test/browser/launch-media.spec.ts`, and
 `test/browser/accessibility.spec.ts` covers demo labeling, visual naming,
 keyboard flow, and reduced-motion behavior for the launch surface.
+
+### Optimization and sensitive-data checks
+
+The script requires `ffmpeg`. Screenshots are requantized to a 256-colour
+palette with metadata stripped, which took `hero.png` from 146 KB to 58 KB at a
+measured SSIM of 0.9996 against the original — no visible loss on a flat dark
+UI. Dithering is deliberately off: its noise costs more bytes than the accuracy
+it buys here.
+
+Sensitive-data protection is split across the two places a leak can happen:
+
+- **Rendered pixels** — the capture journey reads the page text and refuses to
+  screenshot a page containing the home directory, the temporary directory, or
+  the demo project path.
+- **File metadata** — `scripts/lib/media-guard.ts` byte-scans every committed
+  asset for those same tokens plus the account username, as both UTF-8 and
+  UTF-16LE, and fails the run before anything reaches the working tree. Its
+  logic is unit-tested in `test/media-guard.test.ts`, so CI covers the check
+  even though CI cannot run the capture itself.
+
+### Animation format
+
+GitHub renders an animated GIF inline from a plain Markdown image; it does not
+render a repository-relative `.webm` that way. The recording is therefore
+transcoded to GIF for the README, at 800px — GitHub's rendered README width, so
+no browser downscaling. The current encode is 36 frames over 3.6 s for 591 KB;
+the exact size moves a little between runs because the recording length does.
+The `.webm` master stays in `docs/media/` as an ignored intermediate.
+
+### Social preview
+
+`social-preview.png` is composed in the same browser that captured the UI, so
+the card is real product output rather than a mockup: the product name and
+one-line value proposition on the left, and the live Graph view bleeding off
+the bottom-right corner. It is generated at 1280×640, GitHub's recommended
+social preview size, and is legible at thumbnail scale.
+
+Uploading it is a manual step — the GitHub REST API has no social-preview
+endpoint. Upload `docs/media/social-preview.png` under **Settings → General →
+Social preview**.
+
+## Repository metadata, updated 2026-08-05
+
+| Field | Value |
+| --- | --- |
+| Description | `A browser workspace for OpenSpec projects — browse changes, manage tasks, edit specs, and follow your coding agent live.` |
+| Topics | `openspec`, `spec-driven-development`, `cli`, `dashboard`, `typescript`, `ai-agents` |
+| Homepage | Still unset — it is set to the hosted demo URL only after Pages is deployed and verified |
+| Social preview | Asset generated at `docs/media/social-preview.png`; upload is manual |
+
+The description and topics were applied through the GitHub API and match the
+README positioning. The homepage and social preview remain pending because one
+depends on a deployment that has not happened and the other has no API.
 
 ## First release, published 2026-08-04
 

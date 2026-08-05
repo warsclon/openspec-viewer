@@ -33,13 +33,13 @@
 ## 4. Visual Launch and Positioning
 
 - [x] 4.1 Implement the scripted browser capture journey using only the deterministic demo fixture
-- [ ] 4.2 Generate and optimize the primary README screenshot with machine paths and sensitive data checks
-- [ ] 4.3 Generate the short Now-to-Graph-to-task workflow recording and verify it renders on GitHub
-- [ ] 4.4 Create a social preview composition from real UI output at GitHub's recommended dimensions
+- [x] 4.2 Generate and optimize the primary README screenshot with machine paths and sensitive data checks
+- [x] 4.3 Generate the short Now-to-Graph-to-task workflow recording and verify it renders on GitHub
+- [x] 4.4 Create a social preview composition from real UI output at GitHub's recommended dimensions
 - [x] 4.5 Rewrite the README opening as an outcome-focused browser-workspace value proposition
 - [x] 4.6 Add the hero visual, one-command quickstart, and concise comparison with `openspec view`
 - [x] 4.7 Add supported-version, demo-mode, privacy, local-write, and hosted read-only explanations
-- [ ] 4.8 Update the repository description and add the agreed OpenSpec, SDD, CLI, dashboard, TypeScript, and AI-agent topics
+- [x] 4.8 Update the repository description and add the agreed OpenSpec, SDD, CLI, dashboard, TypeScript, and AI-agent topics
 - [ ] 4.9 Publish the social preview and verify repository, search, and shared-link presentation
 
 ## 5. Scoped Package and Releases
