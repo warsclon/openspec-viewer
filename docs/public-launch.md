@@ -227,19 +227,118 @@ Two environment gotchas found while releasing, both fixed:
 - npm 12 reports `npm pack --json` as an object keyed by package name while
   npm 10 reports an array; the package smoke test now accepts both.
 
+## Hosted demo deployed, 2026-08-05
+
+The read-only demo is live at <https://warsclon.github.io/openspec-viewer/> and
+is set as the repository homepage.
+
+### A deployment trap worth recording
+
+Enabling Pages through **Settings → Pages** left the source on
+`Deploy from a branch` (`main` / root) rather than `GitHub Actions`. The API
+reported `build_type: "legacy"`. Two things follow from that, and both
+happened:
+
+1. Jekyll started building the repository root as a static site, publishing the
+   rendered `README.md` instead of the demo.
+2. It would have redeployed on every push to `main`, which the release policy
+   in `docs/repository-security.md` explicitly forbids before external
+   verification.
+
+Switching to `build_type: workflow` was not enough on its own. A legacy build
+was already in flight; it finished at 15:10:51, a few seconds after the
+workflow deployment at 15:10:43, and took the site over. The GitHub API marked
+our deployment `state: "inactive"`, and the root served Jekyll output while the
+demo assets returned 404.
+
+The first probe of the site had passed, because it ran during the window before
+the legacy build landed. Only re-probing showed the takeover. **Verify a Pages
+deployment after the last competing build has finished, not immediately after
+your own succeeds.** Re-running the workflow with `build_type: workflow`
+already set produced the correct site.
+
+### Verified against the public URL
+
+Driven with a real browser against `https://warsclon.github.io/openspec-viewer/`,
+not a local build:
+
+| Check | Result |
+| --- | --- |
+| Read-only indicator | Visible, reads `READ-ONLY DEMO` |
+| `+ New change`, archive | 0 visible (present in the DOM, hidden by the read-only flag) |
+| Task toggles, edit/delete/add actions, notes editor | 0 in the DOM |
+| Deep links `#/next`, `#/graph?spec=interface`, `#/timeline`, `#/board`, `#/change/add-dark-mode/tasks` | All render their expected content under the `/openspec-viewer/` base path |
+| Machine content | No `/Users/`, `/var/folders`, `127.0.0.1`, or `localhost` in rendered text |
+| Console errors and failed requests | None |
+
+The two hidden controls are inert rather than merely invisible: the static host
+has no write API, so an unhidden button would produce a failed request and an
+error toast, not a mutation.
+
+The `github-pages` environment was created by GitHub with a `branch_policy`
+protection rule restricted to `main`, matching the boundary applied by hand to
+the `release` environment.
+
+## Launch validation, 2026-08-05
+
+### Fresh external install
+
+Run with an isolated npm cache, prefix, and `HOME`, from a directory with no
+source checkout — Node 22.22.3, npm 10.9.8:
+
+| Check | Result |
+| --- | --- |
+| `npx @warsclon/openspec-viewer --version` on a cold cache | `0.6.0` |
+| Global install into the isolated prefix | 1 package, no runtime dependencies |
+| `openspec-viewer --demo --no-open` | Serves `200`; terminal reports `Fictional demo project (temporary copy)` and `isolated demo data` |
+| `npm audit signatures` | Verified registry signature, verified attestation |
+| Registry metadata | `0.6.0`, `latest`, MIT, repository and homepage links correct |
+| GitHub Release `v0.6.0` | Published, not a draft, not a prerelease |
+
+`/api/project` does return the temporary directory to the local client. The UI
+never renders it, which is what the README claims and what
+`test/browser/workspace.spec.ts` asserts; the endpoint is bound to loopback and
+the path belongs to the person running the CLI.
+
+### Public presentation
+
+| Surface | Result |
+| --- | --- |
+| `hero.png`, `workflow.gif` | Render as `<img>` in the README with descriptive alternative text |
+| Social preview | Custom upload confirmed through the repository `og:image` |
+| Badges | CI badge reports `passing`; license and Node badges resolve |
+| README links | All resolve, except `npmjs.com`, which returns 403 to automated requests and was confirmed by hand |
+| Community profile | Health score 100; code of conduct, contributing, license, readme, and pull-request template all present |
+| Topics | `openspec`, `spec-driven-development`, `cli`, `dashboard`, `typescript`, `ai-agents` |
+| Roadmap issues | #34, #35 (`good first issue`), #36 (`help wanted`), #37 (unlabelled, exploratory) |
+| Dependabot | Grouped npm and GitHub Actions updates configured, no stale bot pull requests |
+
+Two things that looked like findings and were not. GitHub's `licenseInfo` came
+back empty through one query shape but the repository, license, and registry
+APIs all report MIT — the empty value was a bad field selection, not a
+detection failure. The community profile reports `issue_template: MISSING`
+while `.github/ISSUE_TEMPLATE/` holds `bug_report.yml`, `feature_request.yml`,
+and `config.yml`; that field only tracks the legacy single-file template.
+
 ## Pending external prerequisites
 
 1. ~~Authenticate the maintainer's npm account and verify control of the
    `@warsclon` scope.~~ Done 2026-08-04: authenticated as `warsclon`, scope
    owner confirmed, `@warsclon/openspec-viewer` unpublished and available.
-2. Enable GitHub Pages, run the constrained manual deployment workflow, and
-   verify the public repository-path URL before setting the homepage or
-   enabling automatic deployment from `main`.
+2. ~~Enable GitHub Pages, run the constrained manual deployment workflow, and
+   verify the public repository-path URL before setting the homepage.~~ Done
+   2026-08-05. Deployment stays `workflow_dispatch` only; automatic deployment
+   from `main` is still not enabled.
 3. ~~Configure npm trusted publishing.~~ Done 2026-08-04: the `release`
    environment exists and the trusted publisher is registered for
    `@warsclon/openspec-viewer` (repository `warsclon/openspec-viewer`, workflow
    `release.yml`, environment `release`). The OIDC path itself is exercised for
    the first time by the next `vX.Y.Z` tag; until then it is configured but
    unproven.
-4. Set repository homepage, topics, social preview, and release metadata only
-   after their target artifacts are publicly verifiable.
+4. ~~Set repository homepage, topics, social preview, and release metadata only
+   after their target artifacts are publicly verifiable.~~ Done: topics and
+   description 2026-08-05, social preview uploaded 2026-08-05, homepage set to
+   the verified demo URL 2026-08-05.
+
+Nothing external remains blocked except the decision on whether to enable
+Discussions, and the launch announcement itself.
