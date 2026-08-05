@@ -203,7 +203,11 @@ test/                 # unit tests
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup and the checks a pull request
+has to pass, and [ROADMAP.md](ROADMAP.md) for what is committed next versus what
+is still an idea. Issues labeled
+[`good first issue`](https://github.com/warsclon/openspec-viewer/labels/good%20first%20issue)
+are scoped to be finished independently.
 
 Please follow the [Code of Conduct](CODE_OF_CONDUCT.md). Security issues should
 be reported privately according to the [Security Policy](SECURITY.md).

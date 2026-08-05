@@ -40,7 +40,7 @@
 - [x] 4.6 Add the hero visual, one-command quickstart, and concise comparison with `openspec view`
 - [x] 4.7 Add supported-version, demo-mode, privacy, local-write, and hosted read-only explanations
 - [x] 4.8 Update the repository description and add the agreed OpenSpec, SDD, CLI, dashboard, TypeScript, and AI-agent topics
-- [ ] 4.9 Publish the social preview and verify repository, search, and shared-link presentation
+- [x] 4.9 Publish the social preview and verify repository, search, and shared-link presentation
 
 ## 5. Scoped Package and Releases
 
@@ -68,10 +68,10 @@
 
 ## 7. Contributor Experience
 
-- [ ] 7.1 Add a Now/Next/Later roadmap that distinguishes committed work from exploratory ideas
-- [ ] 7.2 Create a small initial set of roadmap issues with context, scope, acceptance criteria, and validation notes
-- [ ] 7.3 Mark only independently executable issues as `good first issue` or `help wanted`
-- [ ] 7.4 Link contributor documentation to the roadmap, support path, demo fixture, and public-seam test commands
+- [x] 7.1 Add a Now/Next/Later roadmap that distinguishes committed work from exploratory ideas
+- [x] 7.2 Create a small initial set of roadmap issues with context, scope, acceptance criteria, and validation notes
+- [x] 7.3 Mark only independently executable issues as `good first issue` or `help wanted`
+- [x] 7.4 Link contributor documentation to the roadmap, support path, demo fixture, and public-seam test commands
 - [x] 7.5 Configure Dependabot groups for compatible patch/minor npm updates and GitHub Actions updates
 - [x] 7.6 Keep major dependency updates isolated and document the required compatibility review
 - [x] 7.7 Review the existing Dependabot pull requests and close, merge, or supersede each with a recorded reason
