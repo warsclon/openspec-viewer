@@ -60,7 +60,7 @@
   "author": "warsclon",
   "license": "MIT",
   "devDependencies": {
-    "@fission-ai/openspec": "1.7.0",
+    "@fission-ai/openspec": "1.11.0",
     "@playwright/test": "^1.62.1",
     "@types/node": "^22.15.21",
     "@vitest/coverage-v8": "^4.1.10",
